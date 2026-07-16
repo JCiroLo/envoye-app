@@ -81,7 +81,7 @@ const QrScanner = ({ onScanComplete, onCancel }: QrScannerProps) => {
         <div className="mx-auto w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary-foreground mb-2">
           <QrCode className="w-6 h-6 text-purple-600" />
         </div>
-        <CardTitle className="text-2xl font-bold text-gray-800">Escanear Invitación</CardTitle>
+        <CardTitle className="text-4xl font-extralight text-gray-800">Escanear Invitacion</CardTitle>
         <CardDescription className="text-gray-500">
           Apunta con la cámara al código QR del evento
         </CardDescription>

@@ -54,8 +54,8 @@ const LetterForm = ({ eventId, onComplete, onCancel }: LetterFormProps) => {
         <div className="mx-auto w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center text-secondary-foreground mb-2">
           <Heart className="w-6 h-6 text-pink-500 fill-pink-500/20" />
         </div>
-        <CardTitle className="text-2xl font-bold text-gray-800">
-          {step === 1 ? 'Escribir Felicitación' : 'Añadir Foto o Video'}
+        <CardTitle className="text-4xl font-extralight text-gray-800">
+          {step === 1 ? 'Escribir Felicitacion' : 'Anadir Foto o Video'}
         </CardTitle>
         <CardDescription className="text-gray-500">
           {step === 1 
