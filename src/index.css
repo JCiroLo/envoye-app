@@ -1,0 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", system-ui, -apple-system, sans-serif;
+  
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+:root {
+  /* Pastel theme variables - Soft blush and lavender */
+  --background: 0 0% 100%;
+  --foreground: 260 20% 15%;
+  
+  --card: 0 0% 100%;
+  --card-foreground: 260 20% 15%;
+  
+  --popover: 0 0% 100%;
+  --popover-foreground: 260 20% 15%;
+  
+  /* Primary color is a playful pastel lavender-purple */
+  --primary: 265 85% 89%; /* pastel violet-purple */
+  --primary-foreground: 265 60% 25%; /* dark violet text */
+  
+  /* Secondary color is a playful pastel pink-blush */
+  --secondary: 325 85% 91%; /* pastel pink */
+  --secondary-foreground: 325 60% 30%; /* dark magenta text */
+  
+  --muted: 260 20% 97%;
+  --muted-foreground: 260 10% 50%;
+  
+  /* Accent color is a pastel mint/teal */
+  --accent: 170 80% 90%;
+  --accent-foreground: 170 60% 25%;
+  
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 20% 98%;
+  
+  --border: 260 15% 93%;
+  --input: 260 15% 93%;
+  --ring: 265 80% 80%;
+  
+  --radius: 1.25rem;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: radial-gradient(circle at top left, #faf5ff 0%, #fffbfd 40%, #f5fffb 100%);
+  color: rgb(60, 50, 65);
+  min-height: 100vh;
+  margin: 0;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.15);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.3);
+}
