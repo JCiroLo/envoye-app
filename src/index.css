@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
 @font-face {
@@ -8,7 +8,7 @@
 }
 
 @theme {
-  --font-sans: "Outfit", system-ui, -apple-system, sans-serif;
+  --font-sans: "Manrope", system-ui, -apple-system, sans-serif;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -36,67 +36,46 @@
 }
 
 :root {
-  /* Pastel theme variables - Soft blush and lavender */
-  --background: 0 0% 100%;
-  --foreground: 260 20% 15%;
-
-  --card: 0 0% 100%;
-  --card-foreground: 260 20% 15%;
-
-  --popover: 0 0% 100%;
-  --popover-foreground: 260 20% 15%;
-
-  /* Primary color is a playful pastel lavender-purple */
-  --primary: 265 85% 89%; /* pastel violet-purple */
-  --primary-foreground: 265 60% 25%; /* dark violet text */
-
-  /* Secondary color is a playful pastel pink-blush */
-  --secondary: 325 85% 91%; /* pastel pink */
-  --secondary-foreground: 325 60% 30%; /* dark magenta text */
-
-  --muted: 260 20% 97%;
-  --muted-foreground: 260 10% 50%;
-
-  /* Accent color is a pastel mint/teal */
-  --accent: 170 80% 90%;
-  --accent-foreground: 170 60% 25%;
-
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 20% 98%;
-
-  --border: 260 15% 93%;
-  --input: 260 15% 93%;
-  --ring: 265 80% 80%;
-
-  --radius: 1.25rem;
+  --background: #f8f8fc;
+  --foreground: #1f2430;
+  --card: #ffffff;
+  --card-foreground: #1f2430;
+  --popover: #ffffff;
+  --popover-foreground: #1f2430;
+  --primary: #6d4aff;
+  --primary-foreground: #ffffff;
+  --secondary: #ece7ff;
+  --secondary-foreground: #4d32bd;
+  --muted: #f2f3f7;
+  --muted-foreground: #697386;
+  --accent: #d9f8ec;
+  --accent-foreground: #16765a;
+  --destructive: #e5484d;
+  --destructive-foreground: #ffffff;
+  --border: #e6e8ef;
+  --input: #dfe3eb;
+  --ring: #9c8cff;
+  --radius: 1.125rem;
 }
 
 body {
   font-family: var(--font-sans);
-  background: radial-gradient(
-    circle at top left,
-    #faf5ff 0%,
-    #fffbfd 40%,
-    #f5fffb 100%
-  );
-  color: rgb(60, 50, 65);
+  background: var(--event-background, #f8f8fc);
+  color: var(--foreground);
   min-height: 100vh;
   margin: 0;
+  overflow-x: hidden;
 }
 
 #root {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
 
-h1 {
+.brand-mark {
   font-family: "Stella", sans-serif;
-}
-
-span.font-accent {
-  font-family: "Stella", sans-serif;
-  clip-path: inset(0 0 56% 0);
+  letter-spacing: -.08em;
 }
 
 /* Custom scrollbars */

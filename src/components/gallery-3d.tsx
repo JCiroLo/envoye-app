@@ -1,14 +1,17 @@
 import * as React from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Image, Stars } from '@react-three/drei'
+import { Image, Stars, Text } from '@react-three/drei'
 import * as THREE from 'three'
 import useLetterStore, { type Letter } from '@/stores/use-letter-store'
 import Button from '@/components/ui/button'
 import { Play, Pause, ChevronLeft, ChevronRight, X, Sparkles, LogOut } from 'lucide-react'
+import { themeValues, type EventTheme } from '@/lib/event-theme'
 
 type Gallery3DProps = {
   eventId: string
   onBack: () => void
+  lettersOverride?: Letter[]
+  theme?: EventTheme
 }
 
 type Card3DProps = {
@@ -17,6 +20,7 @@ type Card3DProps = {
   lookAtTarget: [number, number, number]
   isActive: boolean
   onClick: () => void
+  primaryColor: string
 }
 
 type CameraControllerProps = {
@@ -55,7 +59,7 @@ const VideoMaterial = ({ url }: { url: string }) => {
   )
 }
 
-const Card3D = ({ letter, position, lookAtTarget, isActive, onClick }: Card3DProps) => {
+const Card3D = ({ letter, position, lookAtTarget, isActive, onClick, primaryColor }: Card3DProps) => {
   const groupRef = React.useRef<THREE.Group | null>(null)
 
   React.useEffect(() => {
@@ -102,11 +106,16 @@ const Card3D = ({ letter, position, lookAtTarget, isActive, onClick }: Card3DPro
               scale={[2, 1.5]}
             />
           </React.Suspense>
-        ) : (
+        ) : letter.mediaType === 'video' ? (
           <mesh>
             <planeGeometry args={[2, 1.5]} />
             <VideoMaterial url={letter.mediaUrl} />
           </mesh>
+        ) : (
+          <>
+            <mesh><planeGeometry args={[2, 1.5]} /><meshBasicMaterial color={letter.mediaType === 'audio' ? '#5b21b6' : '#fce7f3'} side={THREE.DoubleSide} /></mesh>
+            {letter.mediaType === 'audio' ? <Text position={[0, 0, 0.04]} fontSize={0.16} maxWidth={1.6} color="white" textAlign="center">♪ Mensaje de voz</Text> : letter.message && <Text position={[0, 0, 0.04]} fontSize={0.16} maxWidth={1.6} color="#701a75" textAlign="center">{letter.message}</Text>}
+          </>
         )}
       </group>
 
@@ -114,7 +123,7 @@ const Card3D = ({ letter, position, lookAtTarget, isActive, onClick }: Card3DPro
       <mesh position={[0, 0, 0]}>
         <planeGeometry args={[2.06, 1.56]} />
         <meshBasicMaterial
-          color={isActive ? '#d946ef' : '#c084fc'}
+          color={primaryColor}
           side={THREE.DoubleSide}
           transparent
           opacity={0.9}
@@ -197,12 +206,13 @@ const OrbitGroup = ({ children, isPaused }: OrbitGroupProps) => {
   return <group ref={groupRef}>{children}</group>
 }
 
-const Gallery3D = ({ eventId, onBack }: Gallery3DProps) => {
+const Gallery3D = ({ eventId, onBack, lettersOverride, theme }: Gallery3DProps) => {
   const allLetters = useLetterStore((state) => state.letters)
-  const letters = React.useMemo(() => allLetters.filter((l) => l.eventId === eventId), [allLetters, eventId])
+  const letters = React.useMemo(() => lettersOverride ?? allLetters.filter((l) => l.eventId === eventId), [allLetters, eventId, lettersOverride])
   
   const [activeIdx, setActiveIdx] = React.useState<number | null>(null)
   const [isPlaying, setIsPlaying] = React.useState(true)
+  const palette = themeValues(theme)
 
   // Spherical Coordinates generator for cards layout
   const sphereRadius = 5.2
@@ -258,7 +268,7 @@ const Gallery3D = ({ eventId, onBack }: Gallery3DProps) => {
   const activeLetter = activeIdx !== null && letters[activeIdx] ? letters[activeIdx] : null
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900">
+    <div className="relative h-[100dvh] w-full overflow-hidden" style={{ background: `radial-gradient(circle at top, ${palette.primary}55 0%, ${palette.mural} 52%, #07070b 100%)` }}>
       {/* 3D Scene */}
       <Canvas camera={{ position: [0, 1, 10], fov: 60 }} className="w-full h-full">
         <ambientLight intensity={0.8} />
@@ -273,6 +283,7 @@ const Gallery3D = ({ eventId, onBack }: Gallery3DProps) => {
               position={position}
               lookAtTarget={lookAtTarget}
               isActive={activeIdx === idx}
+              primaryColor={palette.primary}
               onClick={() => {
                 setIsPlaying(false)
                 setActiveIdx(idx)
@@ -335,9 +346,9 @@ const Gallery3D = ({ eventId, onBack }: Gallery3DProps) => {
                   <X className="w-5 h-5" />
                 </Button>
               </div>
-              <p className="text-base text-slate-200 leading-relaxed font-medium bg-black/15 p-4 rounded-2xl border border-white/5">
+              {activeLetter.message && <p className="text-base text-slate-200 leading-relaxed font-medium bg-black/15 p-4 rounded-2xl border border-white/5">
                 "{activeLetter.message}"
-              </p>
+              </p>}
             </div>
           )}
 

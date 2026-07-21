@@ -5,7 +5,7 @@ export type Letter = {
   eventId: string
   userName: string
   message: string
-  mediaType: 'image' | 'video'
+  mediaType: 'image' | 'video' | 'audio' | 'text'
   mediaUrl: string
   createdAt: number
 }

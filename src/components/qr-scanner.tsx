@@ -71,10 +71,6 @@ const QrScanner = ({ onScanComplete, onCancel }: QrScannerProps) => {
     }
   }
 
-  const handleSimulateScan = () => {
-    onScanComplete('wedding-magic-2026')
-  }
-
   return (
     <Card className="w-full max-w-md mx-auto overflow-hidden border-2 border-primary/30 shadow-lg bg-white/80 backdrop-blur-md">
       <CardHeader className="text-center pb-2 bg-gradient-to-r from-primary/10 to-secondary/10">
@@ -133,15 +129,6 @@ const QrScanner = ({ onScanComplete, onCancel }: QrScannerProps) => {
         </form>
 
         <div className="w-full flex flex-col gap-2 mt-6">
-          <Button
-            type="button"
-            variant="pastel"
-            onClick={handleSimulateScan}
-            className="w-full border border-teal-200/50"
-          >
-            Simular Escaneo (Demo Boda)
-          </Button>
-
           <Button
             type="button"
             variant="outline"
