@@ -5,7 +5,7 @@ import * as THREE from 'three'
 import useLetterStore, { type Letter } from '@/stores/use-letter-store'
 import Button from '@/components/ui/button'
 import { Play, Pause, ChevronLeft, ChevronRight, X, Sparkles, LogOut } from 'lucide-react'
-import { themeValues, type EventTheme } from '@/lib/event-theme'
+import { themeStyle, themeValues, type EventTheme } from '@/lib/event-theme'
 
 type Gallery3DProps = {
   eventId: string
@@ -268,7 +268,7 @@ const Gallery3D = ({ eventId, onBack, lettersOverride, theme }: Gallery3DProps) 
   const activeLetter = activeIdx !== null && letters[activeIdx] ? letters[activeIdx] : null
 
   return (
-    <div className="relative h-[100dvh] w-full overflow-hidden" style={{ background: `radial-gradient(circle at top, ${palette.primary}55 0%, ${palette.mural} 52%, #07070b 100%)` }}>
+    <div className="relative h-[100dvh] w-full overflow-hidden" style={{ ...themeStyle(theme), background: `radial-gradient(circle at top, ${palette.primary}55 0%, ${palette.mural} 52%, #07070b 100%)` }}>
       {/* 3D Scene */}
       <Canvas camera={{ position: [0, 1, 10], fov: 60 }} className="w-full h-full">
         <ambientLight intensity={0.8} />
@@ -301,7 +301,7 @@ const Gallery3D = ({ eventId, onBack, lettersOverride, theme }: Gallery3DProps) 
         {/* Header */}
         <div className="flex justify-between items-center w-full pointer-events-auto">
           <div className="flex items-center gap-3 bg-slate-900/60 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 text-white shadow-lg">
-            <Sparkles className="w-5 h-5 text-fuchsia-400 animate-pulse" />
+            <Sparkles className="w-5 h-5 text-primary animate-pulse" />
             <div>
               <h1 className="text-sm font-bold tracking-wide uppercase leading-none">Mural de Deseos</h1>
               <p className="text-xs text-slate-400 font-medium">{letters.length} felicitaciones enviadas</p>
@@ -327,7 +327,7 @@ const Gallery3D = ({ eventId, onBack, lettersOverride, theme }: Gallery3DProps) 
             <div className="w-full max-w-xl bg-black/20 backdrop-blur-xl border border-white/20 rounded-3xl p-6 text-white shadow-2xl pointer-events-auto transform translate-y-0 transition-transform duration-300 animate-in fade-in slide-in-from-bottom-5">
               <div className="flex justify-between items-start gap-4 mb-3">
                 <div>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-fuchsia-300">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-primary">
                     Mensaje Recibido
                   </span>
                   <h2 className="text-2xl font-black mt-0.5 tracking-tight text-white">
@@ -390,7 +390,7 @@ const Gallery3D = ({ eventId, onBack, lettersOverride, theme }: Gallery3DProps) 
                   setActiveIdx(null)
                   setIsPlaying(true)
                 }}
-                className="text-xs text-fuchsia-300 font-semibold hover:text-white px-2"
+                className="text-xs text-primary font-semibold hover:text-white px-2"
               >
                 Vista General
               </Button>

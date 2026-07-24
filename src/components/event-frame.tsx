@@ -1,12 +1,69 @@
-import type { ReactNode } from 'react'
-import cn from '@/utils/cn-helper'
+import type { ReactNode } from "react";
+import useEventStore from "@/stores/use-event-store";
+import cn from "@/utils/cn-helper";
 
-export type FrameName = 'classic-letter' | 'floral' | 'gallery'
+export type FrameName = "classic-letter" | "floral" | "gallery";
 
-const FloralSvg = () => <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full text-[var(--event-primary)] opacity-70" fill="none"><path d="M3 20C14 2 24 10 18 21C9 31 1 30 3 20ZM97 20C86 2 76 10 82 21C91 31 99 30 97 20ZM3 80C14 98 24 90 18 79C9 69 1 70 3 80ZM97 80C86 98 76 90 82 79C91 69 99 70 97 80Z" fill="currentColor"/><path d="M12 7c8 11 17 12 26 7M88 7c-8 11-17 12-26 7M12 93c8-11 17-12 26-7M88 93c-8-11-17-12-26-7" stroke="currentColor" strokeWidth="1.2"/></svg>
-const ClassicSvg = () => <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full text-[var(--event-primary)]" fill="none"><rect x="2.5" y="2.5" width="95" height="95" rx="4" stroke="currentColor" strokeWidth="1.2"/><rect x="5.5" y="5.5" width="89" height="89" rx="3" stroke="currentColor" strokeWidth=".35" strokeDasharray="2 1.5"/><path d="M9 13h12M79 13h12M9 87h12M79 87h12" stroke="currentColor" strokeWidth="1.2"/></svg>
-const GallerySvg = () => <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full text-[var(--event-primary)]" fill="none"><rect x="1.5" y="1.5" width="97" height="97" rx="3" stroke="currentColor" strokeWidth="3"/><rect x="5" y="5" width="90" height="90" rx="2" stroke="currentColor" strokeWidth=".7"/></svg>
+const FlowerCorner = ({ className }: { className: string }) => (
+  <svg
+    viewBox="0 0 96 96"
+    className={cn("pointer-events-none absolute h-20 w-20 text-primary", className)}
+    fill="none"
+    aria-hidden="true"
+  >
+    <g transform="translate(48 34)" fill="currentColor" opacity=".24">
+      <ellipse cy="-14" rx="10" ry="17" />
+      <ellipse transform="rotate(72)" cy="-14" rx="10" ry="17" />
+      <ellipse transform="rotate(144)" cy="-14" rx="10" ry="17" />
+      <ellipse transform="rotate(216)" cy="-14" rx="10" ry="17" />
+      <ellipse transform="rotate(288)" cy="-14" rx="10" ry="17" />
+    </g>
+    <circle cx="48" cy="34" r="7" fill="currentColor" opacity=".78" />
+    <path d="M48 41c-2 17-12 30-28 44" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+    <path d="M37 59c-12-5-18 1-20 10 11 2 18-2 20-10Z" fill="currentColor" opacity=".42" />
+    <path d="M31 70c8-2 14 2 16 10-9 3-16-1-16-10Z" fill="currentColor" opacity=".3" />
+    <circle cx="19" cy="84" r="3" fill="currentColor" opacity=".6" />
+  </svg>
+);
 
-export const EventFrame = ({ frame = 'classic-letter' }: { frame?: string }) => frame === 'floral' ? <FloralSvg /> : frame === 'gallery' ? <GallerySvg /> : <ClassicSvg />
+const FloralFrame = () => (
+  <>
+    <FlowerCorner className="left-1 top-1" />
+    <FlowerCorner className="right-1 top-1 scale-x-[-1]" />
+    <FlowerCorner className="bottom-1 left-1 scale-y-[-1]" />
+    <FlowerCorner className="bottom-1 right-1 scale-x-[-1] scale-y-[-1]" />
+  </>
+);
+const ClassicFrame = () => (
+  <>
+    <div className="pointer-events-none absolute inset-2 rounded-[1.7rem] border border-primary" />
+    <div className="pointer-events-none absolute inset-4 rounded-[1.25rem] border border-dashed border-primary/45" />
+  </>
+);
+const GalleryFrame = () => (
+  <>
+    <div className="pointer-events-none absolute inset-1 rounded-[1.85rem] border-[3px] border-primary" />
+    <div className="pointer-events-none absolute inset-3 rounded-[1.45rem] border border-primary/60" />
+  </>
+);
 
-export const FramedSurface = ({ children, frame, className }: { children: ReactNode; frame?: string; className?: string }) => <div className={cn('relative overflow-hidden rounded-[2rem] bg-white shadow-[0_20px_60px_-35px_rgba(35,25,70,.35)]', className)}><EventFrame frame={frame} /><div className="relative">{children}</div></div>
+export const EventFrame = ({ frame = "classic-letter" }: { frame?: string }) =>
+  frame === "floral" ? <FloralFrame /> : frame === "gallery" ? <GalleryFrame /> : <ClassicFrame />;
+
+export const FramedSurface = ({
+  children,
+  frame,
+  className,
+}: {
+  children: ReactNode;
+  frame?: string;
+  className?: string;
+}) => {
+  const storeFrame = useEventStore((state) => state.event?.invitation_frame);
+  return (
+    <div className={cn("surface-card relative overflow-hidden rounded-4xl", className)}>
+      <EventFrame frame={frame ?? storeFrame} />
+      <div className="relative">{children}</div>
+    </div>
+  );
+};
