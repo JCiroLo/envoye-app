@@ -1,7 +1,8 @@
 import * as React from "react";
-import { Check, ChevronLeftIcon, Copy, Download, ExternalLink, Play, QrCode, Square, X } from "lucide-react";
+import { Check, ChevronLeftIcon, Copy, Download, ExternalLink, ImagePlus, Play, QrCode, Square, X } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { sileo } from "sileo";
+import { motion } from "framer-motion";
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
 import PageShell from "@/components/page-shell";
@@ -17,8 +18,12 @@ type EventData = {
   event_date: string | null;
   welcome_message_text: string | null;
   invitation_frame: string;
-  theme: EventTheme;
-  settings: { allowText: boolean; allowImages: boolean; allowVideos: boolean; allowAudio: boolean };
+  theme_name: EventTheme;
+  allow_text: boolean;
+  allow_images: boolean;
+  allow_videos: boolean;
+  allow_audio: boolean;
+  cover_optimized_path: string | null;
   status: "draft" | "active" | "closed";
   access_code: string;
 };
@@ -50,6 +55,7 @@ const AdminEventPage = () => {
   const [acting, setActing] = React.useState(false);
   const [qrLoading, setQrLoading] = React.useState(false);
   const [qr, setQr] = React.useState<QrData | null>(null);
+  const [cover, setCover] = React.useState<File | null>(null);
 
   React.useEffect(() => {
     if (!token) {
@@ -65,8 +71,11 @@ const AdminEventPage = () => {
           eventDate: event.event_date?.slice(0, 16) ?? "",
           welcomeMessageText: event.welcome_message_text ?? "",
           invitationFrame: event.invitation_frame,
-          preset: event.theme.preset,
-          ...event.settings,
+          preset: event.theme_name,
+          allowText: event.allow_text,
+          allowImages: event.allow_images,
+          allowVideos: event.allow_videos,
+          allowAudio: event.allow_audio,
         });
       })
       .catch((error: Error) => sileo.error({ title: "No pudimos abrir el evento", description: error.message }));
@@ -75,7 +84,7 @@ const AdminEventPage = () => {
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
     setForm((current) => ({ ...current, [key]: value }));
 
-  const theme: EventTheme = { preset: form.preset, colors: {} };
+  const theme = form.preset as EventTheme;
 
   const payload = () => ({
     name: form.name,
@@ -83,12 +92,10 @@ const AdminEventPage = () => {
     welcomeMessageText: form.welcomeMessageText || null,
     invitationFrame: form.invitationFrame,
     theme,
-    settings: {
-      allowText: form.allowText,
-      allowImages: form.allowImages,
-      allowVideos: form.allowVideos,
-      allowAudio: form.allowAudio,
-    },
+    allowText: form.allowText,
+    allowImages: form.allowImages,
+    allowVideos: form.allowVideos,
+    allowAudio: form.allowAudio,
   });
 
   const save = async () => {
@@ -99,9 +106,22 @@ const AdminEventPage = () => {
         token: token ?? undefined,
         body: JSON.stringify(payload()),
       });
+      const targetId = eventId ?? result.event.id;
+      let savedEvent = result.event;
+      if (cover) {
+        const coverForm = new FormData();
+        coverForm.set("cover", cover);
+        const uploaded = await api<{ event: EventData }>(`/api/events/${targetId}/cover`, {
+          method: "PUT",
+          token: token ?? undefined,
+          body: coverForm,
+        });
+        savedEvent = uploaded.event;
+        setCover(null);
+      }
       sileo.success({ title: eventId ? "Cambios guardados" : "Evento creado" });
-      if (!eventId) navigate(`/admin/events/${result.event.id}`);
-      else setEvent(result.event);
+      if (!eventId) navigate(`/admin/events/${targetId}`);
+      else setEvent(savedEvent);
     } catch (error) {
       sileo.error({ title: "No pudimos guardar", description: error instanceof Error ? error.message : undefined });
     } finally {
@@ -156,8 +176,9 @@ const AdminEventPage = () => {
 
   return (
     <PageShell>
-      <PageTransition>
-        <section style={themeStyle(theme)} className="mx-auto max-w-5xl">
+      <PageTransition className="w-full z-10">
+        {/* <section style={themeStyle(theme)}> */}
+        <section>
           <div className="mb-6 flex items-center justify-between">
             <Link
               to="/admin"
@@ -171,10 +192,66 @@ const AdminEventPage = () => {
               </span>
             )}
           </div>
-          <div className="grid gap-6 lg:grid-cols-[1.4fr_.6fr]">
-            <section className="surface-card rounded-[2rem] p-6 sm:p-9">
-              <p className="text-xs font-extrabold uppercase tracking-[.18em] text-primary">Configuración</p>
-              <h1 className="mt-2 text-3xl font-extrabold text-foreground">
+          <div className="flex flex-col gap-1">
+            {/* <aside style={themeStyle(theme)} className="w-full rounded-4xl p-5"> */}
+            {eventId && (
+              <aside className="w-full rounded-4xl p-5">
+                {/* <p className="text-xs font-extrabold uppercase tracking-[.18em] text-white/55">Vista previa</p>
+              <div className="mt-5">
+                <div className="relative overflow-hidden rounded-3xl bg-card p-6 text-center">
+                  <EventFrame frame={form.invitationFrame} />
+                  <p className="relative text-xs font-extrabold uppercase tracking-widest text-primary">
+                    Estás invitado
+                  </p>
+                  <p className="relative mt-3 text-xl font-extrabold text-card-foreground">
+                    {form.name || "Tu evento"}
+                  </p>
+                  <p className="relative mt-4 text-xs text-muted-foreground">
+                    {form.welcomeMessageText || "Tu mensaje de bienvenida aparecerá aquí."}
+                  </p>
+                </div>
+              </div> */}
+
+                <div className="mt-0 space-y-2">
+                  <Button
+                    variant={event?.status === "active" ? "destructive" : "secondary"}
+                    className="w-full"
+                    isLoading={acting}
+                    onClick={toggleStatus}
+                  >
+                    {event?.status === "active" ? (
+                      <>
+                        <Square className="mr-2 h-4 w-4" />
+                        Cerrar evento
+                      </>
+                    ) : (
+                      <>
+                        <Play className="mr-2 h-4 w-4" />
+                        Activar evento
+                      </>
+                    )}
+                  </Button>
+                  <Button className="w-full" onClick={copy}>
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copiar código
+                  </Button>
+                  <Button className="w-full" isLoading={qrLoading} onClick={generateQr}>
+                    <QrCode className="mr-2 h-4 w-4" />
+                    Generar QR
+                  </Button>
+                  {event?.status === "closed" && (
+                    <Link to={`/admin/events/${eventId}/gallery`}>
+                      <Button className="w-full">
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Ver mural
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              </aside>
+            )}
+            <section className="surface-card grow rounded-4xl p-6 sm:p-9">
+              <h1 className="text-3xl font-extrabold text-foreground">
                 {eventId ? "Personaliza tu evento" : "Crea un evento"}
               </h1>
               <div className="mt-8 grid gap-5 sm:grid-cols-2">
@@ -187,13 +264,13 @@ const AdminEventPage = () => {
                     placeholder="Boda de Ana y Juan"
                   />
                 </label>
-                <label className="text-sm font-bold text-foreground">
+                <label className="sm:col-span-2 text-sm font-bold text-foreground">
                   Fecha
                   <Input
                     type="datetime-local"
                     value={form.eventDate}
                     onChange={(e) => set("eventDate", e.target.value)}
-                    className="mt-2"
+                    className="mt-2 w-full"
                   />
                 </label>
                 <label className="sm:col-span-2 text-sm font-bold text-foreground">
@@ -206,14 +283,14 @@ const AdminEventPage = () => {
                   />
                 </label>
               </div>
-              <div className="mt-8">
+              {/* <div className="mt-8">
                 <p className="text-sm font-bold text-foreground">Tema completo</p>
                 <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {themeOptions.map((preset) => (
                     <button
                       key={preset}
                       onClick={() => set("preset", preset)}
-                      style={themeStyle({ preset })}
+                      style={themeStyle(preset as EventTheme)}
                       className={`rounded-2xl border p-3 text-left text-sm font-bold capitalize transition ${form.preset === preset ? "border-primary bg-secondary text-primary" : "border-border bg-card text-card-foreground hover:bg-muted"}`}
                     >
                       <span className="mb-2 block h-5 w-5 rounded-full bg-primary" />
@@ -221,15 +298,38 @@ const AdminEventPage = () => {
                     </button>
                   ))}
                 </div>
-              </div>
+              </div> */}
               <div className="mt-8">
+                <p className="text-sm font-bold text-foreground">
+                  Foto de la invitación <span className="font-medium text-muted-foreground">(opcional)</span>
+                </p>
+                <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-muted/40 p-5 text-sm font-semibold text-muted-foreground hover:bg-muted">
+                  <ImagePlus className="h-5 w-5" /> {cover ? "Cambiar foto" : "Seleccionar foto"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => setCover(e.target.files?.[0] ?? null)}
+                  />
+                </label>
+                {cover && (
+                  <motion.img
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    src={URL.createObjectURL(cover)}
+                    alt="Cover"
+                    className="mt-2 h-96 rounded-2xl"
+                  />
+                )}
+              </div>
+              {/* <div className="mt-8">
                 <p className="text-sm font-bold text-foreground">Marco de invitación</p>
-                <div style={themeStyle(theme)} className="mt-3 grid grid-cols-3 gap-2">
+                <div style={themeStyle(theme)} className="mt-3 grid grid-cols-1 gap-2">
                   {frames.map((frame) => (
                     <button
                       key={frame.id}
                       onClick={() => set("invitationFrame", frame.id)}
-                      className={`relative h-24 overflow-hidden rounded-2xl border bg-secondary p-3 text-xs font-bold transition ${form.invitationFrame === frame.id ? "border-primary text-primary" : "border-border text-secondary-foreground"}`}
+                      className={`relative w-[50%] overflow-hidden aspect-video rounded-2xl border bg-secondary p-3 text-xs font-bold transition ${form.invitationFrame === frame.id ? "border-primary text-primary" : "border-border text-secondary-foreground"}`}
                     >
                       <EventFrame frame={frame.id} />
                       <span className="relative">
@@ -239,13 +339,13 @@ const AdminEventPage = () => {
                     </button>
                   ))}
                 </div>
-              </div>
+              </div> */}
               <div className="mt-8">
                 <p className="text-sm font-bold text-foreground">Permitir aportes</p>
                 <div className="mt-3 flex flex-wrap gap-x-5 gap-y-3">
                   {(
                     [
-                      ["allowText", "Texto"],
+                      // ["allowText", "Texto"],
                       ["allowImages", "Fotos"],
                       ["allowVideos", "Videos"],
                       ["allowAudio", "Audio"],
@@ -266,65 +366,10 @@ const AdminEventPage = () => {
                   ))}
                 </div>
               </div>
-              <Button className="mt-9" onClick={save} isLoading={saving}>
+              <Button className="mt-9 w-full" onClick={save} isLoading={saving}>
                 Guardar cambios
               </Button>
             </section>
-            <aside style={themeStyle(theme)} className="theme-mural rounded-4xl p-5 shadow-xl">
-              <p className="text-xs font-extrabold uppercase tracking-[.18em] text-white/55">Vista previa</p>
-              <div className="mt-5">
-                <div className="relative overflow-hidden rounded-3xl bg-card p-6 text-center">
-                  <EventFrame frame={form.invitationFrame} />
-                  <p className="relative text-xs font-extrabold uppercase tracking-widest text-primary">
-                    Estás invitado
-                  </p>
-                  <p className="relative mt-3 text-xl font-extrabold text-card-foreground">
-                    {form.name || "Tu evento"}
-                  </p>
-                  <p className="relative mt-4 text-xs text-muted-foreground">
-                    {form.welcomeMessageText || "Tu mensaje de bienvenida aparecerá aquí."}
-                  </p>
-                </div>
-              </div>
-              {eventId && (
-                <div className="mt-6 space-y-2">
-                  <Button
-                    variant={event?.status === "active" ? "destructive" : "secondary"}
-                    className="w-full"
-                    isLoading={acting}
-                    onClick={toggleStatus}
-                  >
-                    {event?.status === "active" ? (
-                      <>
-                        <Square className="mr-2 h-4 w-4" />
-                        Cerrar evento
-                      </>
-                    ) : (
-                      <>
-                        <Play className="mr-2 h-4 w-4" />
-                        Activar evento
-                      </>
-                    )}
-                  </Button>
-                  <Button variant="outline" className="w-full" onClick={copy}>
-                    <Copy className="mr-2 h-4 w-4" />
-                    Copiar código
-                  </Button>
-                  <Button variant="outline" className="w-full" isLoading={qrLoading} onClick={generateQr}>
-                    <QrCode className="mr-2 h-4 w-4" />
-                    Generar QR
-                  </Button>
-                  {event?.status === "closed" && (
-                    <Link to={`/admin/events/${eventId}/gallery`}>
-                      <Button className="w-full">
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        Ver mural
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-              )}
-            </aside>
           </div>
           {qr && (
             <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/45 p-4 backdrop-blur-sm">

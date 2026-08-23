@@ -7,13 +7,12 @@ export type PublicEvent = {
   event_date: string | null;
   welcome_message_text: string | null;
   invitation_frame: string;
-  theme: EventTheme;
-  settings: {
-    allowText: boolean;
-    allowImages: boolean;
-    allowVideos: boolean;
-    allowAudio: boolean;
-  };
+  theme_name: EventTheme;
+  allow_text: boolean;
+  allow_images: boolean;
+  allow_videos: boolean;
+  allow_audio: boolean;
+  cover_url: string | null;
 };
 
 type EventStore = {

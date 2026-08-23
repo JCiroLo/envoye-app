@@ -15,11 +15,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(
           "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] cursor-pointer duration-200",
           // Variants
-          variant === "default" && "bg-primary text-primary-foreground shadow-[0_8px_20px_-10px_var(--primary)] hover:-translate-y-0.5 hover:brightness-95",
+          variant === "default" && "bg-primary text-primary-foreground shadow-sm hover:brightness-75",
           variant === "secondary" && "bg-secondary text-secondary-foreground hover:brightness-95",
           variant === "outline" &&
-            "border border-border bg-card text-card-foreground shadow-sm hover:bg-muted",
-          variant === "ghost" && "text-muted-foreground hover:bg-muted hover:text-foreground",
+            "border-border border-2 text-card shadow-sm hover:bg-card hover:text-card-foreground",
+          variant === "ghost" && "text-muted-foreground hover:text-foreground",
           variant === "link" && "text-primary underline-offset-4 hover:underline",
           variant === "destructive" && "bg-destructive text-destructive-foreground shadow-sm hover:bg-red-600",
           variant === "pastel" && "bg-accent text-accent-foreground hover:brightness-95",

@@ -1,8 +1,10 @@
 import * as React from "react";
-import { Camera, Mic, Upload, Video } from "lucide-react";
+import { createPortal } from "react-dom";
+import { Camera, SwitchCamera, Mic, Upload, Video } from "lucide-react";
+import { sileo } from "sileo";
+import { motion } from "framer-motion";
 import Button from "@/components/ui/button";
 import type { GuestMediaType } from "@/stores/use-guest-submission-store";
-import { sileo } from "sileo";
 
 type CaptureSettings = {
   allowImages?: boolean;
@@ -36,12 +38,24 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
   const [stream, setStream] = React.useState<MediaStream | null>(null);
   const [countdown, setCountdown] = React.useState<number | null>(null);
   const [recording, setRecording] = React.useState(false);
+  const [facingMode, setFacingMode] = React.useState<"user" | "environment">("user");
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const streamRef = React.useRef<MediaStream | null>(null);
   const recorderRef = React.useRef<MediaRecorder | null>(null);
   const chunks = React.useRef<Blob[]>([]);
   const timer = React.useRef<number | null>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const countdownAudio = React.useRef(new Audio("/sfx/countdown.mp3"));
+  const shutterAudio = React.useRef(new Audio("/sfx/camera-shutter.mp3"));
+  const startRecordAudio = React.useRef(new Audio("/sfx/camera-start-record.mp3"));
+  const stopRecordAudio = React.useRef(new Audio("/sfx/camera-stop-record.mp3"));
+
+  React.useEffect(() => {
+    [countdownAudio, shutterAudio, startRecordAudio, stopRecordAudio].forEach(({ current }) => {
+      current.preload = "auto";
+      current.load();
+    });
+  }, []);
 
   const stop = React.useCallback(() => {
     if (timer.current) window.clearTimeout(timer.current);
@@ -66,15 +80,21 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
     }
   }, [stream]);
 
-  const start = async (nextMode: GuestMediaType) => {
+  const start = async (nextMode: GuestMediaType, nextFacingMode = facingMode) => {
     const isAllowed = nextMode === "image" ? allowImage : nextMode === "video" ? allowVideo : allowAudio;
     if (!isAllowed) return;
     try {
       const nextStream = await navigator.mediaDevices.getUserMedia({
-        video: nextMode !== "audio",
+        video:
+          nextMode === "audio"
+            ? false
+            : {
+                facingMode: { ideal: nextFacingMode },
+              },
         audio: nextMode !== "image",
       });
       streamRef.current = nextStream;
+      setFacingMode(nextFacingMode);
       setMode(nextMode);
       setStream(nextStream);
     } catch {
@@ -86,35 +106,25 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
     }
   };
 
-  const click = () => {
-    const context = new AudioContext();
-    const osc = context.createOscillator();
-    const gain = context.createGain();
-    gain.gain.setValueAtTime(0.15, context.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.12);
-    osc.connect(gain).connect(context.destination);
-    osc.start();
-    osc.stop(context.currentTime + 0.12);
+  const playSound = (audio: React.MutableRefObject<HTMLAudioElement>) => {
+    audio.current.currentTime = 0;
+    void audio.current.play().catch(() => undefined);
   };
 
   const begin = () => {
-    let number = 3;
-    setCountdown(number);
-    const tick = () => {
-      number -= 1;
-      if (number > 0) {
-        setCountdown(number);
-        timer.current = window.setTimeout(tick, 700);
-        return;
-      }
-      setCountdown(0);
-      click();
-      if (mode === "image") {
+    setCountdown(3);
+    playSound(countdownAudio);
+    window.setTimeout(() => setCountdown(2), 1_000);
+    window.setTimeout(() => setCountdown(1), 2_000);
+    timer.current = window.setTimeout(() => {
+      setCountdown(null);
+      if (mode === "image" && videoRef.current) {
+        playSound(shutterAudio);
         const canvas = document.createElement("canvas");
         const video = videoRef.current!;
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        canvas.getContext("2d")?.drawImage(video, 0, 0);
+        canvas.getContext("2d")?.drawImage(video, 0, 0, canvas.width, canvas.height);
         canvas.toBlob(
           (blob) => {
             if (blob) onCapture(new File([blob], "envoye-photo.jpg", { type: "image/jpeg" }), "image");
@@ -134,15 +144,25 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
         if (event.data.size) chunks.current.push(event.data);
       };
       recorder.onstop = () => {
+        if (mode === "video") playSound(stopRecordAudio);
         const mime = mode === "video" ? "video/webm" : "audio/webm";
         onCapture(new File(chunks.current, `envoye-${mode}.webm`, { type: mime }), mode!);
         stop();
       };
       recorder.start();
+      if (mode === "video") playSound(startRecordAudio);
       setRecording(true);
       if (mode === "video") timer.current = window.setTimeout(() => recorder.stop(), maxVideoSeconds * 1000);
-    };
-    timer.current = window.setTimeout(tick, 700);
+    }, 3_000);
+  };
+
+  const switchCamera = () => {
+    if (!mode || mode === "audio") return;
+    const next = facingMode === "user" ? "environment" : "user";
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+    setStream(null);
+    void start(mode, next);
   };
 
   const upload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -179,7 +199,11 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
             </Button>
           )}
           {allowedMedia && (
-            <Button className="flex-1 w-full h-28 flex-col gap-2 sm:w-0" type="button" onClick={() => inputRef.current?.click()}>
+            <Button
+              className="flex-1 w-full h-28 flex-col gap-2 sm:w-0"
+              type="button"
+              onClick={() => inputRef.current?.click()}
+            >
               <Upload />
               Galería
             </Button>
@@ -188,18 +212,20 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
       </>
     );
 
-  return (
-    <div className="mx-auto max-w-xl space-y-4">
-      <div className="relative aspect-video overflow-hidden rounded-3xl bg-slate-950">
-        {mode !== "audio" && <video ref={videoRef} autoPlay muted playsInline className="h-full w-full object-cover" />}
+  return createPortal(
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-50 bg-black text-white">
+      <div className="relative mx-auto h-dvh max-w-md overflow-hidden bg-black sm:max-w-xl">
+        {mode !== "audio" && (
+          <video ref={videoRef} autoPlay muted playsInline className="h-full w-full object-contain" />
+        )}
         {mode === "audio" && (
           <div className="flex h-full items-center justify-center text-white">
             <Mic className="h-20 w-20" />
           </div>
         )}
-        {countdown !== null && (
+        {countdown !== null && countdown > 0 && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/45 text-8xl font-bold text-white">
-            {countdown === 0 ? "¡Click!" : countdown}
+            {countdown}
           </div>
         )}
         {recording && (
@@ -207,22 +233,33 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
             ● Grabando
           </div>
         )}
-      </div>
-      <div className="flex gap-3">
-        {recording ? (
-          <Button type="button" variant="destructive" onClick={() => recorderRef.current?.stop()} className="flex-1">
-            Detener
-          </Button>
-        ) : (
-          <Button type="button" onClick={begin} className="flex-1">
-            {mode === "image" ? "Tomar foto" : "Comenzar"}
-          </Button>
+        {mode !== "audio" && !recording && countdown === null && (
+          <button
+            type="button"
+            onClick={switchCamera}
+            className="absolute right-5 top-5 grid h-11 w-11 place-items-center rounded-full bg-black/50"
+            aria-label="Cambiar cámara"
+          >
+            <SwitchCamera className="h-5 w-5" />
+          </button>
         )}
-        <Button type="button" variant="outline" disabled={recording || countdown !== null} onClick={stop}>
-          Cancelar
-        </Button>
+        <div className="absolute inset-x-0 bottom-0 flex gap-3 bg-linear-to-t from-black/85 to-transparent px-5 pb-8 pt-20">
+          {recording ? (
+            <Button type="button" variant="destructive" onClick={() => recorderRef.current?.stop()} className="flex-1">
+              Detener
+            </Button>
+          ) : (
+            <Button type="button" onClick={begin} className="flex-1">
+              {mode === "image" ? "Tomar foto" : "Comenzar"}
+            </Button>
+          )}
+          <Button type="button" disabled={recording || countdown !== null} onClick={stop}>
+            Cancelar
+          </Button>
+        </div>
       </div>
-    </div>
+    </motion.div>,
+    document.body,
   );
 };
 

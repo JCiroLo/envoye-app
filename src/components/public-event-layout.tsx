@@ -50,11 +50,8 @@ const PublicEventLayout = () => {
     return <Navigate to={basePath} replace />;
   }
 
-  return (
-    <div style={themeStyle(event?.theme)}>
-      <Outlet />
-    </div>
-  );
+  // return <div style={themeStyle(event?.theme_name)}><Outlet /></div>;
+  return <Outlet />;
 };
 
 export default PublicEventLayout;

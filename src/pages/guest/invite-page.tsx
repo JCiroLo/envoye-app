@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import Countdown from "react-countdown";
 import { Link, useParams } from "react-router-dom";
 import { useShallow } from "zustand/shallow";
 import Button from "@/components/ui/button";
@@ -17,7 +18,7 @@ const InvitePage = () => {
   );
 
   return (
-    <PageShell>
+    <PageShell className="items-end" background={event?.cover_url}>
       <PageTransition>
         <div className="w-full max-w-2xl">
           <FramedSurface className="p-8 text-center sm:p-12">
@@ -36,21 +37,35 @@ const InvitePage = () => {
               <p className="py-10 text-muted-foreground">Abriendo invitación…</p>
             ) : (
               <>
-                <p className="text-xs font-extrabold uppercase tracking-[.22em] text-primary">
-                  Estás invitado
-                </p>
-                <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-foreground text-balance sm:text-5xl">
-                  {event.name}
-                </h1>
                 {event.event_date && (
                   <p className="mt-3 text-sm text-muted-foreground">
                     {new Date(event.event_date).toLocaleDateString("es-CO", { dateStyle: "full" })}
                   </p>
                 )}
+                <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-foreground text-balance sm:text-5xl">
+                  {event.name}
+                </h1>
                 {event.welcome_message_text && (
-                  <p className="mx-auto mt-8 max-w-lg rounded-2xl bg-secondary p-5 text-base leading-7 text-secondary-foreground">
-                    {event.welcome_message_text}
-                  </p>
+                  <p className="mx-auto mt-8 max-w-lg text-base leading-7">{event.welcome_message_text}</p>
+                )}
+                {event.event_date && (
+                  <div className="mt-6 px-5 py-3 text-sm text-muted-foreground">
+                    <Countdown
+                      date={new Date(event.event_date)}
+                      renderer={({ completed, days, hours, minutes, seconds }) =>
+                        completed ? (
+                          <span className="text-2xl font-extrabold text-foreground">00:00:00</span>
+                        ) : (
+                          <span className="text-2xl font-extrabold text-foreground">
+                            {days ? `${days}d ` : ""}
+                            {String(hours).padStart(2, "0")}:{String(minutes).padStart(2, "0")}:
+                            {String(seconds).padStart(2, "0")}
+                          </span>
+                        )
+                      }
+                      daysInHours
+                    />
+                  </div>
                 )}
                 <Link to={`/invite/${accessCode}/record`} state={{ startsSubmission: true }}>
                   <Button size="lg" className="mt-9 gap-2">

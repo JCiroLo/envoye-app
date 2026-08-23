@@ -189,7 +189,7 @@ const MediaCapture = ({ onCaptureComplete, onCancel }: MediaCaptureProps) => {
 
             <Button
               type="button"
-              variant="secondary"
+              variant="ghost"
               onClick={() => startCamera('video')}
               className="flex flex-col gap-2 h-28 rounded-2xl bg-secondary text-secondary-foreground border-2 border-secondary/20 hover:scale-[1.03] transition-transform"
             >

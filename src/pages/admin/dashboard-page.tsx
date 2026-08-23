@@ -33,14 +33,11 @@ const AdminDashboardPage = () => {
   }, [navigate, token]);
 
   return (
-    <PageShell centered={false}>
-      <PageTransition>
-        <section className="mx-auto max-w-6xl">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-extrabold uppercase tracking-[.18em] text-primary">Panel de administración</p>
-              <h1 className="mt-2 text-4xl font-extrabold tracking-tight text-foreground">Tus eventos</h1>
-            </div>
+    <PageShell>
+      <PageTransition className="z-10">
+        <section className="">
+          <div className="flex items-center justify-between gap-4">
+            <h1 className="text-4xl font-extrabold tracking-tight text-foreground">Tus eventos</h1>
             <div className="flex gap-2">
               <Button
                 variant="ghost"
@@ -60,23 +57,29 @@ const AdminDashboardPage = () => {
               </Link>
             </div>
           </div>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 flex flex-col">
             {loading && <p className="text-muted-foreground">Cargando eventos…</p>}
             {events.map((event) => (
               <Link
                 key={event.id}
+                className="relative group rounded-3xl surface-card p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
                 to={`/admin/events/${event.id}`}
-                className="group rounded-3xl border border-border bg-card p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
               >
                 {event.status === "active" ? (
-                  <p className="text-xs font-extrabold uppercase tracking-wider text-primary">Activo</p>
+                  <span className="absolute right-5 top-5 rounded-full bg-lime-700 px-3 py-1 text-xs font-extrabold text-foreground">
+                    Activo
+                  </span>
                 ) : event.status === "closed" ? (
-                  <p className="text-xs font-extrabold uppercase tracking-wider text-destructive">Cerrado</p>
+                  <span className="absolute right-5 top-5 rounded-full bg-destructive px-3 py-1 text-xs font-extrabold text-foreground">
+                    Cerrado
+                  </span>
                 ) : (
-                  <p className="text-xs font-extrabold uppercase tracking-wider text-gray-400">Borrador</p>
+                  <span className="absolute right-5 top-5 rounded-full bg-muted px-3 py-1 text-xs font-extrabold text-foreground">
+                    Borrador
+                  </span>
                 )}
                 <h2 className="mt-2 text-2xl font-extrabold text-card-foreground">{event.name}</h2>
-                <p className="mt-4 text-sm text-muted-foreground">Código · {event.access_code}</p>
+                <p className="text-sm text-muted-foreground">Código · {event.access_code}</p>
               </Link>
             ))}
             {!loading && !events.length && (

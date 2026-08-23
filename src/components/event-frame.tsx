@@ -61,8 +61,8 @@ export const FramedSurface = ({
 }) => {
   const storeFrame = useEventStore((state) => state.event?.invitation_frame);
   return (
-    <div className={cn("surface-card relative overflow-hidden rounded-4xl", className)}>
-      <EventFrame frame={frame ?? storeFrame} />
+    <div className={cn("overflow-hidden rounded-4xl", className)}>
+      {/* <EventFrame frame={frame ?? storeFrame} /> */}
       <div className="relative">{children}</div>
     </div>
   );
