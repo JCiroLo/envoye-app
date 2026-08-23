@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import useEventStore from "@/stores/use-event-store";
+// import useEventStore from "@/stores/use-event-store";
 import cn from "@/utils/cn-helper";
 
 export type FrameName = "classic-letter" | "floral" | "gallery";
@@ -52,14 +52,14 @@ export const EventFrame = ({ frame = "classic-letter" }: { frame?: string }) =>
 
 export const FramedSurface = ({
   children,
-  frame,
+  // frame,
   className,
 }: {
   children: ReactNode;
   frame?: string;
   className?: string;
 }) => {
-  const storeFrame = useEventStore((state) => state.event?.invitation_frame);
+  // const storeFrame = useEventStore((state) => state.event?.invitation_frame);
   return (
     <div className={cn("overflow-hidden rounded-4xl", className)}>
       {/* <EventFrame frame={frame ?? storeFrame} /> */}

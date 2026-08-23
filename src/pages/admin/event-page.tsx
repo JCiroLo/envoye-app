@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Check, ChevronLeftIcon, Copy, Download, ExternalLink, ImagePlus, Play, QrCode, Square, X } from "lucide-react";
+import { ChevronLeftIcon, Copy, Download, ExternalLink, ImagePlus, Play, QrCode, Square, X } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { sileo } from "sileo";
 import { motion } from "framer-motion";
@@ -8,9 +8,9 @@ import Input from "@/components/ui/input";
 import PageShell from "@/components/page-shell";
 import PageTransition from "@/components/page-transition";
 import Textarea from "@/components/ui/textarea";
-import { EventFrame } from "@/components/event-frame";
+// import { EventFrame } from "@/components/event-frame";
 import { api, getAdminToken } from "@/lib/api";
-import { themeOptions, themeStyle, type EventTheme } from "@/lib/event-theme";
+import { themeStyle, type EventTheme } from "@/lib/event-theme";
 
 type EventData = {
   id: string;
@@ -39,11 +39,11 @@ const blank = {
   allowVideos: true,
   allowAudio: true,
 };
-const frames = [
-  { id: "classic-letter", label: "Carta" },
-  { id: "floral", label: "Flores" },
-  { id: "gallery", label: "Galería" },
-];
+// const frames = [
+//   { id: "classic-letter", label: "Carta" },
+//   { id: "floral", label: "Flores" },
+//   { id: "gallery", label: "Galería" },
+// ];
 
 const AdminEventPage = () => {
   const { eventId } = useParams();
@@ -373,7 +373,7 @@ const AdminEventPage = () => {
           </div>
           {qr && (
             <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/45 p-4 backdrop-blur-sm">
-              <div style={themeStyle(theme)} className="surface-card w-full max-w-sm rounded-[2rem] p-7 text-center">
+              <div style={themeStyle(theme)} className="surface-card w-full max-w-sm rounded-4xl p-7 text-center">
                 <button
                   onClick={() => setQr(null)}
                   className="float-right rounded-full p-2 text-muted-foreground hover:bg-muted"

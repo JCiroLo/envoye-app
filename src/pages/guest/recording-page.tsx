@@ -32,7 +32,7 @@ const RecordingPage = () => {
     if (event?.allow_audio) text.push("notas de voz");
 
     return text.join(", ");
-  }, []);
+  }, [event?.allow_text, event?.allow_images, event?.allow_videos, event?.allow_audio]);
 
   async function send(name: string) {
     if (!hasContent) return;

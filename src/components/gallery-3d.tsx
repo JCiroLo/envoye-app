@@ -276,7 +276,7 @@ const Gallery3D = ({ eventId, onBack, lettersOverride, theme }: Gallery3DProps) 
 
   return (
     <div
-      className="relative h-[100dvh] w-full overflow-hidden"
+      className="relative h-dvh w-full overflow-hidden"
       style={{
         ...themeStyle(theme),
         background: `radial-gradient(circle at top, ${palette.primary}55 0%, ${palette.mural} 52%, #07070b 100%)`,

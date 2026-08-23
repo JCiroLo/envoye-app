@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Navigate, Outlet, useLocation, useParams } from "react-router-dom";
 import { useShallow } from "zustand/shallow";
-import { themeStyle } from "@/lib/event-theme";
+// import { themeStyle } from "@/lib/event-theme";
 import useEventStore from "@/stores/use-event-store";
 import useGuestSubmissionStore from "@/stores/use-guest-submission-store";
 
