@@ -10,7 +10,7 @@ import PageTransition from "@/components/page-transition";
 import { FramedSurface } from "@/components/event-frame";
 import useGuestSubmissionStore from "@/stores/use-guest-submission-store";
 import useEventStore from "@/stores/use-event-store";
-import { api } from "@/lib/api";
+import { ApiError, api } from "@/lib/api";
 
 const RecordingPage = () => {
   const { accessCode = "" } = useParams();
@@ -19,6 +19,24 @@ const RecordingPage = () => {
   const event = useEventStore((store) => store.event);
 
   const [privacyDialogOpen, setPrivacyDialogOpen] = useState(false);
+
+  const submissionErrorMessage = (error: unknown) => {
+    if (error instanceof ApiError) {
+      const messages: Record<string, string> = {
+        FILE_TOO_LARGE: "El archivo es demasiado grande. Intenta con un video o audio más corto.",
+        EVENT_CLOSED: "Este evento ya no está recibiendo felicitaciones.",
+        MEDIA_NOT_ALLOWED: "Ese tipo de contenido no está habilitado para este evento.",
+        UNSUPPORTED_MEDIA: "No pudimos leer ese archivo. Prueba con otro formato.",
+        CONTENT_REQUIRED: "Añade un mensaje o archivo antes de enviarlo.",
+        CONSENT_REQUIRED: "Debes aceptar el aviso de privacidad para poder enviarlo.",
+        INVALID_MESSAGE: "Revisa el contenido de tu mensaje e inténtalo de nuevo.",
+        EVENT_CHECK_FAILED: "No pudimos conectar con el evento. Inténtalo de nuevo en unos momentos.",
+        SUBMISSION_SAVE_FAILED: "No pudimos guardar tu felicitación. Inténtalo nuevamente.",
+      };
+      return messages[error.code ?? ""] ?? "No pudimos enviar tu felicitación. Inténtalo de nuevo.";
+    }
+    return "Revisa tu conexión a internet e inténtalo de nuevo.";
+  };
 
   const hasMediaOptions = event?.allow_images || event?.allow_videos || event?.allow_audio;
   const hasContent = Boolean(state.media || (event?.allow_text && state.messageText.trim()));
@@ -55,7 +73,7 @@ const RecordingPage = () => {
     } catch (err) {
       sileo.error({
         title: "No pudimos enviar tu mensaje",
-        description: err instanceof Error ? err.message : undefined,
+        description: submissionErrorMessage(err),
       });
     }
   }

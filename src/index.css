@@ -90,6 +90,14 @@ body {
   letter-spacing: -0.08em;
 }
 
+[data-sileo-title] {
+  text-transform: none !important;
+}
+
+[data-sileo-viewport] {
+  z-index: 9999 !important;
+}
+
 /* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 8px;

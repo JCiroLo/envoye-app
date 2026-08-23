@@ -4,11 +4,13 @@ type RequestOptions = RequestInit & { token?: string };
 
 export class ApiError extends Error {
   readonly status: number;
+  readonly code?: string;
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, code?: string) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.code = code;
   }
 }
 
@@ -26,7 +28,7 @@ export const api = async <T>(path: string, options: RequestOptions = {}): Promis
       setAdminToken(null);
       window.dispatchEvent(new Event("envoye:admin-session-expired"));
     }
-    throw new ApiError(body.error ?? "No fue posible completar la solicitud.", response.status);
+    throw new ApiError(body.error ?? "No fue posible completar la solicitud.", response.status, body.code);
   }
 
   return body as T;
