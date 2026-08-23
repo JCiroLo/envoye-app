@@ -44,6 +44,7 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
   const recorderRef = React.useRef<MediaRecorder | null>(null);
   const chunks = React.useRef<Blob[]>([]);
   const timer = React.useRef<number | null>(null);
+  const countdownTimers = React.useRef<number[]>([]);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const countdownAudio = React.useRef(new Audio("/sfx/countdown.mp3"));
   const shutterAudio = React.useRef(new Audio("/sfx/camera-shutter.mp3"));
@@ -59,6 +60,8 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
 
   const stop = React.useCallback(() => {
     if (timer.current) window.clearTimeout(timer.current);
+    countdownTimers.current.forEach((timeout) => window.clearTimeout(timeout));
+    countdownTimers.current = [];
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
     setStream(null);
@@ -111,11 +114,33 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
     void audio.current.play().catch(() => undefined);
   };
 
+  const unlockCaptureSounds = () => {
+    [shutterAudio, startRecordAudio, stopRecordAudio].forEach(({ current }) => {
+      current.muted = true;
+      current.currentTime = 0;
+      void current.play().then(() => {
+        current.pause();
+        current.currentTime = 0;
+        current.muted = false;
+      }).catch(() => { current.muted = false; });
+    });
+  };
+
+  const recorderMimeType = (mediaType: GuestMediaType) => {
+    const candidates = mediaType === "video"
+      ? ["video/webm;codecs=vp8,opus", "video/mp4", "video/webm"]
+      : ["audio/webm;codecs=opus", "audio/mp4", "audio/webm", "audio/ogg;codecs=opus"];
+    return candidates.find((candidate) => MediaRecorder.isTypeSupported(candidate));
+  };
+
   const begin = () => {
+    unlockCaptureSounds();
     setCountdown(3);
     playSound(countdownAudio);
-    window.setTimeout(() => setCountdown(2), 1_000);
-    window.setTimeout(() => setCountdown(1), 2_000);
+    countdownTimers.current = [
+      window.setTimeout(() => setCountdown(2), 1_000),
+      window.setTimeout(() => setCountdown(1), 2_000),
+    ];
     timer.current = window.setTimeout(() => {
       setCountdown(null);
       if (mode === "image" && videoRef.current) {
@@ -135,34 +160,49 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
         );
         return;
       }
-      const recorder = new MediaRecorder(stream!, {
-        mimeType: MediaRecorder.isTypeSupported("video/webm") && mode === "video" ? "video/webm" : undefined,
-      });
+      const preferredMime = recorderMimeType(mode!);
+      const recorder = preferredMime ? new MediaRecorder(stream!, { mimeType: preferredMime }) : new MediaRecorder(stream!);
       chunks.current = [];
       recorderRef.current = recorder;
       recorder.ondataavailable = (event) => {
         if (event.data.size) chunks.current.push(event.data);
       };
       recorder.onstop = () => {
-        if (mode === "video") playSound(stopRecordAudio);
-        const mime = mode === "video" ? "video/webm" : "audio/webm";
-        onCapture(new File(chunks.current, `envoye-${mode}.webm`, { type: mime }), mode!);
+        if (mode === "video" || mode === "audio") playSound(stopRecordAudio);
+        const mime = recorder.mimeType || chunks.current[0]?.type || (mode === "video" ? "video/webm" : "audio/webm");
+        const extension = mime.includes("mp4") ? (mode === "audio" ? "m4a" : "mp4") : mime.includes("ogg") ? "ogg" : "webm";
+        onCapture(new File([new Blob(chunks.current, { type: mime })], `envoye-${mode}.${extension}`, { type: mime }), mode!);
         stop();
       };
       recorder.start();
-      if (mode === "video") playSound(startRecordAudio);
+      if (mode === "video" || mode === "audio") playSound(startRecordAudio);
       setRecording(true);
       if (mode === "video") timer.current = window.setTimeout(() => recorder.stop(), maxVideoSeconds * 1000);
     }, 3_000);
   };
 
-  const switchCamera = () => {
+  const switchCamera = async () => {
     if (!mode || mode === "audio") return;
     const next = facingMode === "user" ? "environment" : "user";
-    streamRef.current?.getTracks().forEach((track) => track.stop());
-    streamRef.current = null;
-    setStream(null);
-    void start(mode, next);
+    const activeStream = streamRef.current;
+    if (!activeStream) return;
+    try {
+      const replacement = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: next } }, audio: false });
+      const replacementTrack = replacement.getVideoTracks()[0];
+      if (!replacementTrack) throw new Error("No video track available");
+      activeStream.getVideoTracks().forEach((track) => {
+        activeStream.removeTrack(track);
+        track.stop();
+      });
+      activeStream.addTrack(replacementTrack);
+      setFacingMode(next);
+      if (videoRef.current) {
+        videoRef.current.srcObject = activeStream;
+        void videoRef.current.play().catch(() => undefined);
+      }
+    } catch {
+      sileo.error({ title: "No pudimos cambiar de cámara" });
+    }
   };
 
   const upload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -233,7 +273,7 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
             ● Grabando
           </div>
         )}
-        {mode !== "audio" && !recording && countdown === null && (
+        {mode !== "audio" && countdown === null && (
           <button
             type="button"
             onClick={switchCamera}

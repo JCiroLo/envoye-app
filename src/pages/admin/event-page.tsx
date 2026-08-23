@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ChevronLeftIcon, Copy, Download, ExternalLink, ImagePlus, Play, QrCode, Square, X } from "lucide-react";
+import { ChevronLeftIcon, Copy, ExternalLink, ImagePlus, Play, QrCode, Square } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { sileo } from "sileo";
 import { motion } from "framer-motion";
@@ -10,7 +10,8 @@ import PageTransition from "@/components/page-transition";
 import Textarea from "@/components/ui/textarea";
 // import { EventFrame } from "@/components/event-frame";
 import { api, getAdminToken } from "@/lib/api";
-import { themeStyle, type EventTheme } from "@/lib/event-theme";
+import { type EventTheme } from "@/lib/event-theme";
+import QrPreviewDialog from "@/components/dialogs/qr-preview-dialog";
 
 type EventData = {
   id: string;
@@ -55,6 +56,7 @@ const AdminEventPage = () => {
   const [acting, setActing] = React.useState(false);
   const [qrLoading, setQrLoading] = React.useState(false);
   const [qr, setQr] = React.useState<QrData | null>(null);
+  const [qrOpen, setQrOpen] = React.useState(false);
   const [cover, setCover] = React.useState<File | null>(null);
 
   React.useEffect(() => {
@@ -160,10 +162,18 @@ const AdminEventPage = () => {
   };
 
   const generateQr = async () => {
+    if (qr) {
+      setQrOpen(true);
+      return;
+    }
+
     if (!eventId) return;
+
     setQrLoading(true);
+
     try {
       setQr(await api<QrData>(`/api/events/${eventId}/qr`, { token: token ?? undefined }));
+      setQrOpen(true);
     } catch (error) {
       sileo.error({
         title: "No pudimos generar el QR",
@@ -371,32 +381,12 @@ const AdminEventPage = () => {
               </Button>
             </section>
           </div>
-          {qr && (
-            <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/45 p-4 backdrop-blur-sm">
-              <div style={themeStyle(theme)} className="surface-card w-full max-w-sm rounded-4xl p-7 text-center">
-                <button
-                  onClick={() => setQr(null)}
-                  className="float-right rounded-full p-2 text-muted-foreground hover:bg-muted"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-                <p className="text-xs font-extrabold uppercase tracking-[.18em] text-primary">Código de invitación</p>
-                <h2 className="mt-2 text-2xl font-extrabold text-foreground">{qr.accessCode}</h2>
-                <div className="mx-auto mt-6 grid h-64 w-64 place-items-center rounded-full bg-secondary p-5">
-                  <div className="rounded-[1.35rem] bg-card p-3 shadow-lg">
-                    <img src={qr.imageDataUrl} alt={`QR para ${qr.accessCode}`} className="h-48 w-48" />
-                  </div>
-                </div>
-                <p className="mt-5 break-all text-xs text-muted-foreground">{qr.inviteUrl}</p>
-                <a href={qr.imageDataUrl} download={`envoye-${qr.accessCode}.png`}>
-                  <Button className="mt-5 w-full">
-                    <Download className="mr-2 h-4 w-4" />
-                    Descargar QR
-                  </Button>
-                </a>
-              </div>
-            </div>
-          )}
+          <QrPreviewDialog
+            open={qrOpen}
+            image={qr?.imageDataUrl}
+            accessCode={qr?.accessCode}
+            onClose={() => setQrOpen(false)}
+          />
         </section>
       </PageTransition>
     </PageShell>
