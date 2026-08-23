@@ -17,7 +17,7 @@ const ConfirmationPage = () => {
   }
 
   return (
-    <PageShell className="items-end" background={event?.cover_url}>
+    <PageShell className="flex items-end" background={event?.cover_url}>
       <PageTransition className="z-10">
         <Confetti />
         <section className="max-w-lg rounded-4xl p-10 text-center">

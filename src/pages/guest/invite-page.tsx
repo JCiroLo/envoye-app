@@ -18,7 +18,7 @@ const InvitePage = () => {
   );
 
   return (
-    <PageShell className="items-end" background={event?.cover_url}>
+    <PageShell className="flex items-end" background={event?.cover_url}>
       <PageTransition>
         <div className="w-full max-w-2xl">
           <FramedSurface className="p-8 text-center sm:p-12">
@@ -33,9 +33,7 @@ const InvitePage = () => {
                   <Button className="mt-7 w-full">Volver</Button>
                 </Link>
               </>
-            ) : !event ? (
-              <p className="py-10 text-muted-foreground">Abriendo invitación…</p>
-            ) : (
+            ) : event ? (
               <>
                 {event.event_date && (
                   <p className="mt-3 text-sm text-muted-foreground">
@@ -73,7 +71,7 @@ const InvitePage = () => {
                   </Button>
                 </Link>
               </>
-            )}
+            ) : null}
           </FramedSurface>
         </div>
       </PageTransition>

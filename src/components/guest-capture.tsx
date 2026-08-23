@@ -179,28 +179,28 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
     return (
       <>
         <input ref={inputRef} onChange={upload} type="file" accept={allowedMedia} className="hidden" />
-        <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="flex gap-2">
           {allowImage && (
-            <Button className="flex-1 w-full h-28 flex-col gap-2 sm:w-0" type="button" onClick={() => start("image")}>
+            <Button className="flex-1 w-0 h-28 flex-col gap-2 sm:w-0" type="button" onClick={() => start("image")}>
               <Camera />
               Foto
             </Button>
           )}
           {allowVideo && (
-            <Button className="flex-1 w-full h-28 flex-col gap-2 sm:w-0" type="button" onClick={() => start("video")}>
+            <Button className="flex-1 w-0 h-28 flex-col gap-2 sm:w-0" type="button" onClick={() => start("video")}>
               <Video />
               Video
             </Button>
           )}
           {allowAudio && (
-            <Button className="flex-1 w-full h-28 flex-col gap-2 sm:w-0" type="button" onClick={() => start("audio")}>
+            <Button className="flex-1 w-0 h-28 flex-col gap-2 sm:w-0" type="button" onClick={() => start("audio")}>
               <Mic />
               Audio
             </Button>
           )}
           {allowedMedia && (
             <Button
-              className="flex-1 w-full h-28 flex-col gap-2 sm:w-0"
+              className="flex-1 w-0 h-28 flex-col gap-2 sm:w-0"
               type="button"
               onClick={() => inputRef.current?.click()}
             >

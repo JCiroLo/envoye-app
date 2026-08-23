@@ -6,31 +6,30 @@ const PageShell = ({
   children,
   className,
   background = DEFAULT_BACKGROUND_IMAGE_URL,
-  compact = false,
 }: {
   children: ReactNode;
   className?: string;
   background?: string | null;
-  compact?: boolean;
 }) => {
   return (
-    <main
-      className={cn(
-        className,
-        "relative w-screen max-w-xl min-h-dvh mx-auto overflow-x-hidden flex justify-center bg-background p-4 text-foreground",
-        {
-          "h-dvh overflow-y-hidden": compact,
-        },
-      )}
-    >
+    <main className="relative flex mx-auto w-screen max-w-xl bg-background text-foreground">
       {background && (
-        <img className="fixed inset-0 w-full h-full object-cover blur-3xl" src={background} alt="background image" />
+        <img
+          className="fixed inset-0 w-full h-full object-cover blur-3xl"
+          src={background}
+          alt="blurred background image"
+        />
       )}
       {background && (
-        <img className="absolute inset-0 w-full h-full object-cover" src={background} alt="background image" />
+        <img
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ background: `url(${DEFAULT_BACKGROUND_IMAGE_URL}) center/cover no-repeat` }}
+          src={background}
+          alt="background image"
+        />
       )}
       {background && <div className="fixed inset-0 bg-linear-to-t from-black/80 to-transparent pointer-events-none" />}
-      {children}
+      <div className={cn(className, "h-dvh scroll-auto p-4")}>{children}</div>
     </main>
   );
 };

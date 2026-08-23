@@ -25,7 +25,7 @@ const WelcomePage = () => {
   };
 
   return (
-    <PageShell className="items-end">
+    <PageShell className="flex items-end">
       <PageTransition>
         <section className="relative w-full max-w-xl rounded-4xl p-7 text-center sm:p-10">
           <h1 className="text-3xl font-extrabold text-foreground">Tienes una invitación</h1>

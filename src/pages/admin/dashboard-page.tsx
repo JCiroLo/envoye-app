@@ -1,5 +1,5 @@
 import * as React from "react";
-import { CalendarPlus, LogOut } from "lucide-react";
+import { CalendarPlus, LoaderCircle, LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { sileo } from "sileo";
 import Button from "@/components/ui/button";
@@ -33,9 +33,9 @@ const AdminDashboardPage = () => {
   }, [navigate, token]);
 
   return (
-    <PageShell>
-      <PageTransition className="z-10">
-        <section className="">
+    <PageShell className="w-full z-10">
+      <PageTransition>
+        <section>
           <div className="flex items-center justify-between gap-4">
             <h1 className="text-4xl font-extrabold tracking-tight text-foreground">Tus eventos</h1>
             <div className="flex gap-2">
@@ -58,7 +58,7 @@ const AdminDashboardPage = () => {
             </div>
           </div>
           <div className="mt-8 flex flex-col">
-            {loading && <p className="text-muted-foreground">Cargando eventos…</p>}
+            {loading && <LoaderCircle className="self-center mr-2 h-16 w-16 animate-spin" />}
             {events.map((event) => (
               <Link
                 key={event.id}

@@ -1,7 +1,10 @@
 import * as React from "react";
 import { Navigate, Outlet, useLocation, useParams } from "react-router-dom";
 import { useShallow } from "zustand/shallow";
+import { LoaderCircle } from "lucide-react";
 // import { themeStyle } from "@/lib/event-theme";
+import PageShell from "@/components/page-shell";
+import PageTransition from "@/components/page-transition";
 import useEventStore from "@/stores/use-event-store";
 import useGuestSubmissionStore from "@/stores/use-guest-submission-store";
 
@@ -24,9 +27,12 @@ const PublicEventLayout = () => {
 
   if (loading || eventAccessCode !== normalizedCode) {
     return (
-      <main className="grid min-h-dvh place-items-center bg-background text-muted-foreground">
-        Abriendo invitación…
-      </main>
+      <PageShell className="w-full flex items-center justify-center">
+        <PageTransition className="flex items-center z-10">
+          <LoaderCircle className="mr-2 h-8 w-8 animate-spin" />
+          <p className="text-2xl">Abriendo invitación…</p>
+        </PageTransition>
+      </PageShell>
     );
   }
 

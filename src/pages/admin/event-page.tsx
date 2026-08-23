@@ -34,7 +34,7 @@ const blank = {
   welcomeMessageText: "",
   invitationFrame: "classic-letter",
   preset: "lavender",
-  allowText: true,
+  allowText: false,
   allowImages: true,
   allowVideos: true,
   allowAudio: true,
@@ -175,8 +175,8 @@ const AdminEventPage = () => {
   };
 
   return (
-    <PageShell>
-      <PageTransition className="w-full z-10">
+    <PageShell className="w-full z-10">
+      <PageTransition>
         {/* <section style={themeStyle(theme)}> */}
         <section>
           <div className="mb-6 flex items-center justify-between">

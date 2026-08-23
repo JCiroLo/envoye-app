@@ -41,7 +41,7 @@ const PrivacyDialog: React.FC<PrivacyDialogProps> = ({ open, onSubmit, onClose }
   }
 
   function handleCloseModal(state: boolean) {
-    if (!state) return;
+    if (state) return;
 
     onClose();
   }
