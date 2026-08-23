@@ -37,7 +37,7 @@ const RoutedApp = () => {
 };
 const App = () => (
   <BrowserRouter>
-    <Toaster position="top-right" />
+    <Toaster position="top-right" theme="dark" />
     <RoutedApp />
   </BrowserRouter>
 );
