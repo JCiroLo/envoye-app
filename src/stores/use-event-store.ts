@@ -13,6 +13,7 @@ export type PublicEvent = {
   allow_videos: boolean;
   allow_audio: boolean;
   cover_url: string | null;
+  cover_placeholder_url: string | null;
 };
 
 type EventStore = {

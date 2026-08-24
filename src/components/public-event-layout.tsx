@@ -7,6 +7,7 @@ import PageShell from "@/components/page-shell";
 import PageTransition from "@/components/page-transition";
 import useEventStore from "@/stores/use-event-store";
 import useGuestSubmissionStore from "@/stores/use-guest-submission-store";
+import { preloadPublicCover, publicCoverUrls } from "@/lib/public-cover";
 
 const PublicEventLayout = () => {
   const { accessCode = "" } = useParams();
@@ -22,12 +23,20 @@ const PublicEventLayout = () => {
   );
 
   React.useEffect(() => {
-    if (normalizedCode) void loadEvent(normalizedCode);
+    if (!normalizedCode) return;
+    preloadPublicCover(normalizedCode);
+    void loadEvent(normalizedCode);
   }, [normalizedCode, loadEvent]);
+
+  const optimisticCover = publicCoverUrls(normalizedCode);
 
   if (loading || eventAccessCode !== normalizedCode) {
     return (
-      <PageShell className="w-full flex items-center justify-center">
+      <PageShell
+        className="w-full flex items-center justify-center"
+        background={optimisticCover.cover}
+        backgroundPlaceholder={optimisticCover.placeholder}
+      >
         <PageTransition className="flex items-center justify-center z-10">
           <LoaderCircle className="mr-2 h-8 w-8 animate-spin" />
           <p className="text-2xl">Abriendo invitación</p>

@@ -18,7 +18,7 @@ const InvitePage = () => {
   );
 
   return (
-    <PageShell className="flex items-end w-full" background={event?.cover_url}>
+    <PageShell className="flex items-end w-full" background={event?.cover_url} backgroundPlaceholder={event?.cover_placeholder_url}>
       <PageTransition className="w-full">
         <div className="w-full max-w-2xl">
           <FramedSurface className="text-center">

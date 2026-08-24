@@ -79,7 +79,7 @@ const RecordingPage = () => {
   }
 
   return (
-    <PageShell className="flex items-end" background={event?.cover_url}>
+    <PageShell className="flex items-end" background={event?.cover_url} backgroundPlaceholder={event?.cover_placeholder_url}>
       <PageTransition>
         <FramedSurface className="mx-auto max-w-3xl">
           <div className="text-center">
