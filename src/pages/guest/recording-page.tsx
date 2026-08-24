@@ -81,71 +81,69 @@ const RecordingPage = () => {
   return (
     <PageShell className="flex items-end" background={event?.cover_url}>
       <PageTransition>
-        <section className="mx-auto max-w-3xl">
-          <FramedSurface className="p-8 sm:p-12">
-            <div className="text-center">
-              <h1 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">Deja un recuerdo</h1>
-              <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-muted-foreground">{message}.</p>
-            </div>
-            <div className="mt-7">
-              {state.media ? (
-                <div className="flex flex-col items-center">
-                  {state.mediaPreviewUrl && state.mediaType === "image" && (
-                    <img src={state.mediaPreviewUrl} alt="preview" className="max-h-64 rounded-2xl" />
-                  )}
-                  {state.mediaPreviewUrl && state.mediaType === "video" && (
-                    <video src={state.mediaPreviewUrl} controls className="max-h-64 rounded-2xl" />
-                  )}
-                  {state.mediaPreviewUrl && state.mediaType === "audio" && (
-                    <audio src={state.mediaPreviewUrl} controls className="w-full my-2" />
-                  )}
-                  <Button size="sm" variant="destructive" className="mt-4" onClick={() => state.setMedia(null)}>
-                    <RotateCcw className="mr-2 h-4 w-4" />
-                    Reintentar
-                  </Button>
-                </div>
-              ) : hasMediaOptions ? (
-                <GuestCapture
-                  settings={{
-                    allowImages: event?.allow_images,
-                    allowVideos: event?.allow_videos,
-                    allowAudio: event?.allow_audio,
-                  }}
-                  onCapture={(file, type) => state.setMedia(file, type)}
-                />
-              ) : (
-                <p className="rounded-2xl bg-muted p-5 text-center text-sm text-muted-foreground">
-                  Este evento no recibe archivos multimedia.
-                </p>
-              )}
-            </div>
-            {event?.allow_text && (
-              <div className="mt-8">
-                <label className="text-sm font-bold text-foreground">
-                  Mensaje <span className="font-medium text-muted-foreground">(opcional)</span>
-                </label>
-                <textarea
-                  value={state.messageText}
-                  onChange={(event) => state.setMessageText(event.target.value)}
-                  placeholder="Escribe algo bonito…"
-                  className="mt-2 block min-h-28 w-full resize-none rounded-2xl border border-input bg-background p-4 text-sm leading-6 text-foreground outline-none transition focus:border-ring focus:ring-4 focus:ring-ring/15"
-                />
-              </div>
-            )}
-            <div className="mt-8 flex justify-center space-x-4">
-              <Link to={`/invite/${accessCode}`}>
-                <Button size="lg" variant="ghost">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Atrás
+        <FramedSurface className="mx-auto max-w-3xl">
+          <div className="text-center">
+            <h1 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">Deja un recuerdo</h1>
+            <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-muted-foreground">{message}.</p>
+          </div>
+          <div className="mt-7">
+            {state.media ? (
+              <div className="flex flex-col items-center">
+                {state.mediaPreviewUrl && state.mediaType === "image" && (
+                  <img src={state.mediaPreviewUrl} alt="preview" className="max-h-64 rounded-2xl" />
+                )}
+                {state.mediaPreviewUrl && state.mediaType === "video" && (
+                  <video src={state.mediaPreviewUrl} controls className="max-h-64 rounded-2xl" />
+                )}
+                {state.mediaPreviewUrl && state.mediaType === "audio" && (
+                  <audio src={state.mediaPreviewUrl} controls className="w-full my-2" />
+                )}
+                <Button size="sm" variant="destructive" className="mt-4" onClick={() => state.setMedia(null)}>
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Reintentar
                 </Button>
-              </Link>
-              <Button size="lg" disabled={!hasContent} onClick={() => setPrivacyDialogOpen(true)}>
-                Continuar
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              </div>
+            ) : hasMediaOptions ? (
+              <GuestCapture
+                settings={{
+                  allowImages: event?.allow_images,
+                  allowVideos: event?.allow_videos,
+                  allowAudio: event?.allow_audio,
+                }}
+                onCapture={(file, type) => state.setMedia(file, type)}
+              />
+            ) : (
+              <p className="rounded-2xl bg-muted p-5 text-center text-sm text-muted-foreground">
+                Este evento no recibe archivos multimedia.
+              </p>
+            )}
+          </div>
+          {event?.allow_text && (
+            <div className="mt-8">
+              <label className="text-sm font-bold text-foreground">
+                Mensaje <span className="font-medium text-muted-foreground">(opcional)</span>
+              </label>
+              <textarea
+                value={state.messageText}
+                onChange={(event) => state.setMessageText(event.target.value)}
+                placeholder="Escribe algo bonito…"
+                className="mt-2 block min-h-28 w-full resize-none rounded-2xl border border-input bg-background p-4 text-sm leading-6 text-foreground outline-none transition focus:border-ring focus:ring-4 focus:ring-ring/15"
+              />
             </div>
-          </FramedSurface>
-        </section>
+          )}
+          <div className="mt-8 flex justify-center space-x-4">
+            <Link to={`/invite/${accessCode}`}>
+              <Button size="lg" variant="ghost">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Atrás
+              </Button>
+            </Link>
+            <Button size="lg" disabled={!hasContent} onClick={() => setPrivacyDialogOpen(true)}>
+              Continuar
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        </FramedSurface>
         <PrivacyDialog open={privacyDialogOpen} onSubmit={send} onClose={() => setPrivacyDialogOpen(false)} />
       </PageTransition>
     </PageShell>

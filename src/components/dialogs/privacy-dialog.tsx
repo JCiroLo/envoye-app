@@ -67,14 +67,13 @@ const PrivacyDialog: React.FC<PrivacyDialogProps> = ({ open, onSubmit, onClose }
                   className="mt-6"
                   placeholder="Tu nombre"
                   value={name}
-                  autoFocus
                   onChange={(event) => setName(event.target.value)}
                 />
               </DialogDescription>
             </motion.div>
           ) : null}
         </DialogHeader>
-        <DialogFooter>
+        <DialogFooter className="sm:mt-0 mt-8">
           <Button variant="ghost" onClick={handleGoBack}>
             Volver
           </Button>

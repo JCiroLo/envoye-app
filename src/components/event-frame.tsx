@@ -61,7 +61,7 @@ export const FramedSurface = ({
 }) => {
   // const storeFrame = useEventStore((state) => state.event?.invitation_frame);
   return (
-    <div className={cn("overflow-hidden rounded-4xl", className)}>
+    <div className={cn("overflow-hidden", className)} data-component="frame">
       {/* <EventFrame frame={frame ?? storeFrame} /> */}
       <div className="relative">{children}</div>
     </div>

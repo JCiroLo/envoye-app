@@ -21,7 +21,7 @@ const InvitePage = () => {
     <PageShell className="flex items-end w-full" background={event?.cover_url}>
       <PageTransition className="w-full">
         <div className="w-full max-w-2xl">
-          <FramedSurface className="p-8 text-center sm:p-12">
+          <FramedSurface className="text-center">
             {error ? (
               <>
                 <h1 className="text-3xl font-extrabold text-foreground">Invitación no disponible</h1>

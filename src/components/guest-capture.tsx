@@ -21,14 +21,18 @@ const soundSources: Record<SoundName, string> = {
   recordStop: "/sfx/camera-stop-record.mp3",
 };
 
-const typeFromMime = (mime: string): GuestMediaType | null =>
-  mime.startsWith("image/")
-    ? "image"
-    : mime.startsWith("video/")
-      ? "video"
-      : mime.startsWith("audio/")
-        ? "audio"
-        : null;
+const typeFromFile = (file: File): GuestMediaType | null => {
+  if (file.type.startsWith("image/")) return "image";
+  if (file.type.startsWith("video/")) return "video";
+  if (file.type.startsWith("audio/")) return "audio";
+
+  // iOS Safari can expose gallery files with an empty or generic MIME type.
+  const extension = file.name.split(".").pop()?.toLowerCase();
+  if (["jpg", "jpeg", "png", "webp", "heic", "heif"].includes(extension ?? "")) return "image";
+  if (["mp4", "mov", "m4v", "webm", "3gp"].includes(extension ?? "")) return "video";
+  if (["m4a", "mp3", "wav", "aac", "ogg", "webm"].includes(extension ?? "")) return "audio";
+  return null;
+};
 
 const extensionFor = (mime: string, type: GuestMediaType) =>
   mime.includes("mp4") ? (type === "audio" ? "m4a" : "mp4") : mime.includes("ogg") ? "ogg" : "webm";
@@ -43,7 +47,7 @@ const supportedRecorderMime = (type: GuestMediaType) => {
 
 const mediaDuration = (file: File) =>
   new Promise<number>((resolve, reject) => {
-    const element = document.createElement(file.type.startsWith("video/") ? "video" : "audio");
+    const element = document.createElement(typeFromFile(file) === "video" ? "video" : "audio");
     const url = URL.createObjectURL(file);
     element.preload = "metadata";
     element.onloadedmetadata = () => {
@@ -279,7 +283,7 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
   };
   const upload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    const type = file ? typeFromMime(file.type) : null;
+    const type = file ? typeFromFile(file) : null;
     const enabled =
       type === "image" ? allowImage : type === "video" ? allowVideo : type === "audio" ? allowAudio : false;
     if (file && type && enabled) {
@@ -312,7 +316,7 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
         <div className="flex justify-center gap-2">
           {allowImage && (
             <Button
-              className="h-20 w-20 rounded-xl p-4 flex-col gap-0.5"
+              className="h-18 w-18 rounded-xl p-2 flex-col gap-0.5"
               type="button"
               onClick={() => openCapture("image")}
             >
@@ -322,7 +326,7 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
           )}
           {allowVideo && (
             <Button
-              className="h-20 w-20 rounded-xl p-4 flex-col gap-0.5"
+              className="h-18 w-18 rounded-xl p-2 flex-col gap-0.5"
               type="button"
               onClick={() => openCapture("video")}
             >
@@ -332,7 +336,7 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
           )}
           {allowAudio && (
             <Button
-              className="h-20 w-20 rounded-xl p-4 flex-col gap-0.5"
+              className="h-18 w-18 rounded-xl p-2 flex-col gap-0.5"
               type="button"
               onClick={() => openCapture("audio")}
             >
@@ -342,7 +346,7 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
           )}
           {acceptedTypes && (
             <Button
-              className="h-20 w-20 rounded-xl p-4 flex-col gap-0.5"
+              className="h-18 w-18 rounded-xl p-2 flex-col gap-0.5"
               type="button"
               onClick={() => inputRef.current?.click()}
             >
@@ -358,7 +362,13 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-50 bg-black text-white">
       <div className="relative mx-auto h-dvh max-w-md overflow-hidden bg-black sm:max-w-xl">
         {mode !== "audio" && (
-          <video ref={videoRef} autoPlay muted playsInline className="h-full w-full object-contain" />
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            playsInline
+            className="h-full w-full transform-none object-contain"
+          />
         )}
         {mode === "audio" && (
           <div className="flex h-full items-center justify-center">

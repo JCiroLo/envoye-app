@@ -1,15 +1,22 @@
 import type { ReactNode } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
+import cn from "@/utils/cn-helper";
 
-const PageTransition = ({ children, className }: { children: ReactNode; className?: string }) => (
-  <motion.div
-    className={className}
-    initial={{ opacity: 0, y: 14, scale: 0.99 }}
-    animate={{ opacity: 1, y: 0, scale: 1 }}
-    exit={{ opacity: 0, y: -10, scale: 0.99 }}
-    transition={{ type: "spring", stiffness: 260, damping: 26, mass: 0.8 }}
-  >
-    {children}
-  </motion.div>
-);
+const PageTransition = ({ children, className }: { children: ReactNode; className?: string }) => {
+  const prefersReducedMotion = useReducedMotion();
+
+  return (
+    <motion.div
+      className={cn(className, "w-full")}
+      data-component="page-transition"
+      style={{ willChange: "opacity" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.16, ease: "easeOut" }}
+    >
+      {children}
+    </motion.div>
+  );
+};
 export default PageTransition;
