@@ -214,8 +214,6 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
           ? false
           : {
               facingMode: { ideal: nextFacingMode },
-              width: { ideal: 1280 },
-              height: { ideal: 1280 },
             },
       audio: nextMode !== "image",
     });
