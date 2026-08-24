@@ -28,9 +28,9 @@ const PublicEventLayout = () => {
   if (loading || eventAccessCode !== normalizedCode) {
     return (
       <PageShell className="w-full flex items-center justify-center">
-        <PageTransition className="flex items-center z-10">
+        <PageTransition className="flex items-center justify-center z-10">
           <LoaderCircle className="mr-2 h-8 w-8 animate-spin" />
-          <p className="text-2xl">Abriendo invitación…</p>
+          <p className="text-2xl">Abriendo invitación</p>
         </PageTransition>
       </PageShell>
     );

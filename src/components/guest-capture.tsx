@@ -63,8 +63,12 @@ const mediaDuration = (file: File) =>
 
 const useCaptureSounds = () => {
   const sounds = React.useRef<Record<SoundName, HTMLAudioElement> | null>(null);
+  const audioContext = React.useRef<AudioContext | null>(null);
+  const soundBuffers = React.useRef<Partial<Record<SoundName, AudioBuffer>>>({});
 
   React.useEffect(() => {
+    const context = new AudioContext();
+    audioContext.current = context;
     sounds.current = Object.fromEntries(
       Object.entries(soundSources).map(([name, source]) => {
         const audio = new Audio(source);
@@ -74,29 +78,47 @@ const useCaptureSounds = () => {
     ) as Record<SoundName, HTMLAudioElement>;
 
     Object.values(sounds.current).forEach((audio) => audio.load());
+    void Promise.all(
+      Object.entries(soundSources).map(async ([name, source]) => {
+        try {
+          const response = await fetch(source);
+          const data = await response.arrayBuffer();
+          soundBuffers.current[name as SoundName] = await context.decodeAudioData(data);
+        } catch {
+          // The HTML audio fallback remains available when decoding is unavailable.
+        }
+      }),
+    );
 
-    return () =>
+    return () => {
       Object.values(sounds.current ?? {}).forEach((audio) => {
         audio.pause();
         audio.src = "";
       });
+      void context.close();
+      audioContext.current = null;
+    };
   }, []);
 
-  const play = React.useCallback(async (name: SoundName) => {
-    const audio = sounds.current?.[name];
-
-    if (!audio) return;
-
-    audio.currentTime = 0;
-
-    try {
-      await audio.play();
-    } catch {
-      /* Capturing remains available if a browser blocks sound. */
+  const play = React.useCallback((name: SoundName) => {
+    const context = audioContext.current;
+    const buffer = soundBuffers.current[name];
+    if (context?.state === "running" && buffer) {
+      const source = context.createBufferSource();
+      source.buffer = buffer;
+      source.connect(context.destination);
+      source.start();
+      return;
     }
+
+    const audio = sounds.current?.[name];
+    if (!audio) return;
+    audio.currentTime = 0;
+    void audio.play().catch(() => undefined);
   }, []);
 
   const unlock = React.useCallback(() => {
+    void audioContext.current?.resume();
     (["shutter", "recordStart", "recordStop"] as SoundName[]).forEach((name) => {
       const audio = sounds.current?.[name];
       if (!audio) return;
@@ -139,6 +161,7 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const timeoutsRef = React.useRef<number[]>([]);
   const recordingIntervalRef = React.useRef<number | null>(null);
+  const recordingPipelineCleanupRef = React.useRef<(() => void) | null>(null);
 
   const clearTimers = React.useCallback(() => {
     timeoutsRef.current.forEach((timeout) => window.clearTimeout(timeout));
@@ -161,6 +184,8 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
   
   const closeCapture = React.useCallback(() => {
     clearTimers();
+    recordingPipelineCleanupRef.current?.();
+    recordingPipelineCleanupRef.current = null;
     stopTracks();
     recorderRef.current = null;
     setCountdown(null);
@@ -184,7 +209,14 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
 
   const requestStream = async (nextMode: GuestMediaType, nextFacingMode = facingMode) => {
     const nextStream = await navigator.mediaDevices.getUserMedia({
-      video: nextMode === "audio" ? false : { facingMode: { ideal: nextFacingMode } },
+      video:
+        nextMode === "audio"
+          ? false
+          : {
+              facingMode: { ideal: nextFacingMode },
+              width: { ideal: 1280 },
+              height: { ideal: 1280 },
+            },
       audio: nextMode !== "image",
     });
     streamRef.current = nextStream;
@@ -210,7 +242,10 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
     const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    canvas.getContext("2d")?.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const context = canvas.getContext("2d");
+    context?.translate(canvas.width, 0);
+    context?.scale(-1, 1);
+    context?.drawImage(video, 0, 0, canvas.width, canvas.height);
     canvas.toBlob(
       (blob) => {
         if (blob) onCapture(new File([blob], "envoye-photo.jpg", { type: "image/jpeg" }), "image");
@@ -220,17 +255,46 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
       0.9,
     );
   };
+  const createUnmirroredVideoStream = (source: MediaStream) => {
+    const preview = videoRef.current;
+    if (!preview?.videoWidth || !preview.videoHeight) return source;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = preview.videoWidth;
+    canvas.height = preview.videoHeight;
+    const context = canvas.getContext("2d");
+    if (!context) return source;
+
+    const drawFrame = () => {
+      context.setTransform(-1, 0, 0, 1, canvas.width, 0);
+      context.drawImage(preview, 0, 0, canvas.width, canvas.height);
+      animationFrame = window.requestAnimationFrame(drawFrame);
+    };
+    let animationFrame = window.requestAnimationFrame(drawFrame);
+    const transformed = canvas.captureStream(30);
+    source.getAudioTracks().forEach((track) => transformed.addTrack(track));
+
+    recordingPipelineCleanupRef.current = () => {
+      window.cancelAnimationFrame(animationFrame);
+      transformed.getVideoTracks().forEach((track) => track.stop());
+    };
+
+    return transformed;
+  };
   const startRecorder = (captureMode: "video" | "audio") => {
     const activeStream = streamRef.current;
     if (!activeStream) return;
+    const recordingStream = captureMode === "video" ? createUnmirroredVideoStream(activeStream) : activeStream;
     const mimeType = supportedRecorderMime(captureMode);
-    const recorder = mimeType ? new MediaRecorder(activeStream, { mimeType }) : new MediaRecorder(activeStream);
+    const recorder = mimeType ? new MediaRecorder(recordingStream, { mimeType }) : new MediaRecorder(recordingStream);
     chunksRef.current = [];
     recorderRef.current = recorder;
     recorder.ondataavailable = (event) => {
       if (event.data.size) chunksRef.current.push(event.data);
     };
     recorder.onstop = () => {
+      recordingPipelineCleanupRef.current?.();
+      recordingPipelineCleanupRef.current = null;
       const mime =
         recorder.mimeType || chunksRef.current[0]?.type || (captureMode === "video" ? "video/webm" : "audio/webm");
       const blob = new Blob(chunksRef.current, { type: mime });
@@ -258,8 +322,7 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
     clearTimers();
     unlock();
     setCountdown(3);
-
-    await play("countdown");
+    play("countdown");
 
     schedule(() => setCountdown(2), 1_000);
     schedule(() => setCountdown(1), 2_000);
@@ -367,7 +430,7 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
             autoPlay
             muted
             playsInline
-            className="h-full w-full transform-none object-contain"
+            className="h-full w-full -scale-x-100 object-contain"
           />
         )}
         {mode === "audio" && (
