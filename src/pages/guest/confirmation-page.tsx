@@ -5,6 +5,7 @@ import Button from "@/components/ui/button";
 import PageShell from "@/components/page-shell";
 import useGuestSubmissionStore from "@/stores/use-guest-submission-store";
 import PageTransition from "@/components/page-transition";
+import WhatsappIcon from "@/components/icons/whatsapp-icon";
 import useEventStore from "@/stores/use-event-store";
 
 const ConfirmationPage = () => {
@@ -26,8 +27,16 @@ const ConfirmationPage = () => {
           <p className="mt-3 text-muted-foreground">
             Tu recuerdo ya fue enviado al evento. Puedes cerrar esta pestaña cuando quieras.
           </p>
-          <Button className="mt-12 w-full" onClick={reset}>
+          <Button className="mt-6 w-full" onClick={reset}>
             Enviar otro mensaje
+          </Button>
+          <p className="mt-12 text-muted-foreground">¿Quieres crear un evento como este?</p>
+          <Button
+            className="bg-[#25D366] text-white w-full my-6 gap-2"
+            onClick={() => window.open("https://wa.me/+573152883722", "_blank")}
+          >
+            <WhatsappIcon />
+            Escríbenos
           </Button>
         </section>
       </PageTransition>
