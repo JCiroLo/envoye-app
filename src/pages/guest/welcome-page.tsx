@@ -27,7 +27,7 @@ const WelcomePage = () => {
   return (
     <PageShell className="flex items-end">
       <PageTransition>
-        <section className="relative w-full max-w-xl rounded-4xl p-7 text-center sm:p-10">
+        <section className="relative w-full max-w-xl rounded-4xl text-center">
           <h1 className="text-3xl font-extrabold text-foreground">Tienes una invitación</h1>
           <p className="mt-1 mb-8 text-muted-foreground">
             Escanea el código QR o usa el código de tu invitación para continuar.

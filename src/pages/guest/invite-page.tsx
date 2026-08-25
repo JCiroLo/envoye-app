@@ -23,7 +23,7 @@ const InvitePage = () => {
         <div className="w-full max-w-2xl">
           <FramedSurface className="text-center">
             {error ? (
-              <>
+              <div className="p-6">
                 <h1 className="text-3xl font-extrabold text-foreground">Invitación no disponible</h1>
                 <p className="mt-4 text-muted-foreground">
                   Se ha producido un error al cargar la invitación. Revisa el código de invitación o pregunta a tu
@@ -32,7 +32,7 @@ const InvitePage = () => {
                 <Link to="/">
                   <Button className="mt-7 w-full">Volver</Button>
                 </Link>
-              </>
+              </div>
             ) : event ? (
               <>
                 {event.event_date && (

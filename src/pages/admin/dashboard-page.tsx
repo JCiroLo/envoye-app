@@ -57,7 +57,7 @@ const AdminDashboardPage = () => {
               </Link>
             </div>
           </div>
-          <div className="mt-8 flex flex-col">
+          <div className="mt-8 flex flex-col gap-4">
             {loading && <LoaderCircle className="self-center mr-2 h-16 w-16 animate-spin" />}
             {events.map((event) => (
               <Link

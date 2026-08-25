@@ -35,7 +35,7 @@ const AdminLoginPage = () => {
   return (
     <PageShell className="w-full flex items-center justify-center">
       <PageTransition>
-        <form onSubmit={submit} className="surface-card w-full max-w-md rounded-4xl p-8">
+        <form onSubmit={submit} className="surface-card w-full rounded-4xl p-8">
           <div className="brand-mark text-4xl text-primary">Envoye</div>
           <h1 className="mt-6 text-3xl font-extrabold text-foreground">Administrar eventos</h1>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
