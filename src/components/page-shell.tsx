@@ -49,7 +49,7 @@ const PageShell = ({
           }}
         />
       )}
-      {background && <div className="fixed inset-0 bg-linear-to-t from-black/95 to-transparent pointer-events-none" />}
+      {background && <div className="fixed inset-0 bg-linear-to-t from-black/75 to-transparent pointer-events-none" />}
       <div className={cn(className, "sm:px-8 h-dvh scroll-auto px-4 py-16 w-full")}>{children}</div>
     </main>
   );
