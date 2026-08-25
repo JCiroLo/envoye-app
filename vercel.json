@@ -1,6 +1,17 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
+    {
+      "source": "/invite/:accessCode",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(facebookexternalhit|facebot|whatsapp|twitterbot|linkedinbot|slackbot|discordbot|telegrambot|applebot|googlebot|bingbot).*"
+        }
+      ],
+      "destination": "/api/invitation-preview?accessCode=:accessCode"
+    },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

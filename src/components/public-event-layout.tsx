@@ -28,6 +28,24 @@ const PublicEventLayout = () => {
     void loadEvent(normalizedCode);
   }, [normalizedCode, loadEvent]);
 
+  React.useEffect(() => {
+    if (!event) return;
+
+    const eventDate = event.event_date
+      ? new Intl.DateTimeFormat("es-CO", { dateStyle: "full" }).format(new Date(event.event_date))
+      : null;
+    const title = `${event.name} | Envoye`;
+    const welcomeMessage = event.welcome_message_text?.trim();
+    const description = welcomeMessage
+      ? `${welcomeMessage}${eventDate ? ` · ${eventDate}` : ""}`
+      : (eventDate ? `Te invitan a un evento el ${eventDate}.` : "Tienes una invitación de Envoye.");
+
+    document.title = title;
+    const descriptionTag = document.querySelector('meta[name="description"]') ?? document.head.appendChild(document.createElement("meta"));
+    descriptionTag.setAttribute("name", "description");
+    descriptionTag.setAttribute("content", description);
+  }, [event]);
+
   const optimisticCover = publicCoverUrls(normalizedCode);
 
   if (loading || eventAccessCode !== normalizedCode) {
