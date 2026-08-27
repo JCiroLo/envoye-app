@@ -9,6 +9,7 @@ import {
   Film,
   LoaderCircle,
   RefreshCw,
+  Trash2,
   Video,
 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -16,6 +17,7 @@ import { sileo } from "sileo";
 import { api, getAdminToken } from "@/lib/api";
 import VideoPlayerDialog from "@/components/dialogs/video-player-dialog";
 import Button from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import PageShell from "@/components/page-shell";
 import PageTransition from "@/components/page-transition";
 import { formatDate, formatDuration } from "@/utils/date-tools";
@@ -69,13 +71,44 @@ const VideoRow = ({ video, onOpen }: { video: VideoSubmission; onOpen: (video: V
   </button>
 );
 
+const DeleteVideoDialog = ({
+  video,
+  deleting,
+  onCancel,
+  onConfirm,
+}: {
+  video: VideoSubmission | null;
+  deleting: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) => (
+  <Dialog open={Boolean(video)} onOpenChange={(open) => !open && onCancel()}>
+    <DialogContent className="max-w-sm">
+      <DialogHeader>
+        <DialogTitle>¿Eliminar este video?</DialogTitle>
+        <DialogDescription>
+          Se eliminarán permanentemente el archivo original y su versión optimizada de este evento.
+        </DialogDescription>
+      </DialogHeader>
+      <DialogFooter className="mt-2">
+        <Button variant="secondary" disabled={deleting} onClick={onCancel}>Cancelar</Button>
+        <Button variant="destructive" isLoading={deleting} onClick={onConfirm}>
+          <Trash2 className="mr-2 h-4 w-4" /> Eliminar video
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+);
+
 const AdminVideoLibraryPage = () => {
   const { eventId = "" } = useParams();
   const navigate = useNavigate();
   const [videos, setVideos] = React.useState<VideoSubmission[] | null>(null);
   const [selectedVideo, setSelectedVideo] = React.useState<VideoSubmission | null>(null);
+  const [videoToDelete, setVideoToDelete] = React.useState<VideoSubmission | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
+  const [deleting, setDeleting] = React.useState(false);
 
   const loadVideos = React.useCallback(
     async (refresh = false) => {
@@ -105,6 +138,28 @@ const AdminVideoLibraryPage = () => {
   React.useEffect(() => {
     void loadVideos();
   }, [loadVideos]);
+
+  const requestDelete = (video: VideoSubmission) => {
+    setSelectedVideo(null);
+    setVideoToDelete(video);
+  };
+
+  const deleteVideo = async () => {
+    const token = getAdminToken();
+    if (!token || !videoToDelete) return;
+
+    setDeleting(true);
+    try {
+      await api(`/api/events/${eventId}/videos/${videoToDelete.id}`, { method: "DELETE", token });
+      setVideos((current) => current?.filter((video) => video.id !== videoToDelete.id) ?? null);
+      setVideoToDelete(null);
+      sileo.success({ title: "Video eliminado", description: "También eliminamos sus archivos asociados." });
+    } catch (error) {
+      sileo.error({ title: "No pudimos eliminar el video", description: error instanceof Error ? error.message : undefined });
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <PageShell className="w-full z-10" admin>
@@ -152,7 +207,8 @@ const AdminVideoLibraryPage = () => {
           )}
         </section>
       </PageTransition>
-      <VideoPlayerDialog video={selectedVideo} onClose={() => setSelectedVideo(null)} />
+      <VideoPlayerDialog video={selectedVideo} onClose={() => setSelectedVideo(null)} onDelete={requestDelete} />
+      <DeleteVideoDialog video={videoToDelete} deleting={deleting} onCancel={() => setVideoToDelete(null)} onConfirm={() => void deleteVideo()} />
     </PageShell>
   );
 };

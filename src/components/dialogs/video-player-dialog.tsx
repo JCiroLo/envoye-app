@@ -1,10 +1,18 @@
 import * as React from "react";
-import { Sparkles, Video } from "lucide-react";
+import { Sparkles, Trash2, Video } from "lucide-react";
 import Button from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { VideoSource, VideoSubmission } from "@/types";
 
-const VideoPlayerDialog = ({ video, onClose }: { video: VideoSubmission | null; onClose: () => void }) => {
+const VideoPlayerDialog = ({
+  video,
+  onClose,
+  onDelete,
+}: {
+  video: VideoSubmission | null;
+  onClose: () => void;
+  onDelete: (video: VideoSubmission) => void;
+}) => {
   const [source, setSource] = React.useState<VideoSource>("original");
   const optimizedAvailable = Boolean(video?.optimizedUrl);
   const url = source === "optimized" ? video?.optimizedUrl : video?.originalUrl;
@@ -39,6 +47,15 @@ const VideoPlayerDialog = ({ video, onClose }: { video: VideoSubmission | null; 
                 onClick={() => setSource("optimized")}
               >
                 <Sparkles className="mr-1.5 h-3.5 w-3.5" /> Optimizado
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                className="shrink-0"
+                onClick={() => onDelete(video)}
+                aria-label="Eliminar video"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
               </Button>
             </div>
             <div className="aspect-video bg-black">

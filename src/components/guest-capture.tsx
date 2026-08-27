@@ -14,6 +14,7 @@ type SoundName = "countdown" | "shutter" | "recordStart" | "recordStop";
 const maxRecordingSeconds = Number(
   import.meta.env.VITE_MAX_RECORDING_DURATION_SECONDS ?? import.meta.env.VITE_MAX_VIDEO_DURATION_SECONDS ?? 30,
 );
+const recordingDurationToleranceSeconds = 1;
 const soundSources: Record<SoundName, string> = {
   countdown: "/sfx/countdown.mp3",
   shutter: "/sfx/camera-shutter.mp3",
@@ -307,12 +308,15 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
     setRecording(true);
     setSecondsRemaining(maxRecordingSeconds);
     play("recordStart");
-    let remaining = maxRecordingSeconds;
+    const startedAt = performance.now();
+    const stopRecording = () => {
+      if (recorder.state === "recording") recorder.stop();
+    };
     recordingIntervalRef.current = window.setInterval(() => {
-      remaining -= 1;
-      setSecondsRemaining(Math.max(remaining, 0));
-      if (remaining <= 0 && recorder.state === "recording") recorder.stop();
-    }, 1_000);
+      const elapsed = performance.now() - startedAt;
+      setSecondsRemaining(Math.max(0, Math.ceil((maxRecordingSeconds * 1_000 - elapsed) / 1_000)));
+    }, 250);
+    schedule(stopRecording, maxRecordingSeconds * 1_000);
   };
   const begin = async () => {
     if (!mode) return;
@@ -350,7 +354,7 @@ const GuestCapture = ({ onCapture, settings }: Props) => {
     if (file && type && enabled) {
       if (type === "video" || type === "audio") {
         try {
-          if ((await mediaDuration(file)) > maxRecordingSeconds) {
+          if ((await mediaDuration(file)) > maxRecordingSeconds + recordingDurationToleranceSeconds) {
             sileo.error({
               title: "El archivo es muy largo",
               description: `El límite para videos y notas de voz es de ${maxRecordingSeconds} segundos.`,
