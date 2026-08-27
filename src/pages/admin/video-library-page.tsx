@@ -1,0 +1,160 @@
+import * as React from "react";
+import {
+  ArrowUpRight,
+  CalendarDays,
+  ChevronLeft,
+  CircleAlert,
+  Clapperboard,
+  Clock3,
+  Film,
+  LoaderCircle,
+  RefreshCw,
+  Video,
+} from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { sileo } from "sileo";
+import { api, getAdminToken } from "@/lib/api";
+import VideoPlayerDialog from "@/components/dialogs/video-player-dialog";
+import Button from "@/components/ui/button";
+import PageShell from "@/components/page-shell";
+import PageTransition from "@/components/page-transition";
+import { formatDate, formatDuration } from "@/utils/date-tools";
+import type { VideoSubmission } from "@/types";
+
+const statusLabels: Record<VideoSubmission["processingStatus"], string> = {
+  pending: "En cola",
+  processing: "Optimizando",
+  ready: "Optimizado",
+  failed: "No optimizado",
+};
+
+const statusClasses: Record<VideoSubmission["processingStatus"], string> = {
+  pending: "bg-amber-500/15 text-amber-700",
+  processing: "bg-sky-500/15 text-sky-700",
+  ready: "bg-emerald-500/15 text-emerald-700",
+  failed: "bg-destructive/15 text-destructive",
+};
+
+const VideoRow = ({ video, onOpen }: { video: VideoSubmission; onOpen: (video: VideoSubmission) => void }) => (
+  <button
+    type="button"
+    onClick={() => onOpen(video)}
+    className="group flex w-full items-center gap-4 rounded-3xl border border-border bg-card p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:bg-card/80 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-ring"
+  >
+    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
+      <Video className="h-5 w-5" />
+    </span>
+    <span className="min-w-0 flex-1">
+      <span className="flex items-center gap-2">
+        <span className="truncate font-extrabold text-card-foreground">{video.guestName || "Anónimo"}</span>
+        <span
+          className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${statusClasses[video.processingStatus]}`}
+        >
+          {statusLabels[video.processingStatus]}
+        </span>
+      </span>
+      <span className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1">
+          <CalendarDays className="h-3.5 w-3.5" /> {formatDate(video.createdAt)}
+        </span>
+        <span className="inline-flex items-center gap-1">
+          <Clock3 className="h-3.5 w-3.5" /> {formatDuration(video.durationSeconds)}
+        </span>
+      </span>
+      <span className="mt-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground">
+        <Film className="h-3.5 w-3.5" /> Original{video.optimizedUrl ? " · Optimizado disponible" : ""}
+      </span>
+    </span>
+    <ArrowUpRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-foreground" />
+  </button>
+);
+
+const AdminVideoLibraryPage = () => {
+  const { eventId = "" } = useParams();
+  const navigate = useNavigate();
+  const [videos, setVideos] = React.useState<VideoSubmission[] | null>(null);
+  const [selectedVideo, setSelectedVideo] = React.useState<VideoSubmission | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const loadVideos = React.useCallback(
+    async (refresh = false) => {
+      const token = getAdminToken();
+      if (!token) {
+        navigate("/admin/login");
+        return;
+      }
+
+      refresh ? setRefreshing(true) : setLoading(true);
+      try {
+        const result = await api<{ videos: VideoSubmission[] }>(`/api/events/${eventId}/videos`, { token });
+        setVideos(result.videos);
+      } catch (error) {
+        sileo.error({
+          title: "No pudimos cargar los videos",
+          description: error instanceof Error ? error.message : undefined,
+        });
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [eventId, navigate],
+  );
+
+  React.useEffect(() => {
+    void loadVideos();
+  }, [loadVideos]);
+
+  return (
+    <PageShell className="w-full z-10" admin>
+      <PageTransition>
+        <section className="mx-auto w-full max-w-xl pb-8">
+          <div className="flex items-center justify-between gap-3">
+            <Link
+              to={`/admin/events/${eventId}`}
+              className="flex items-center text-sm font-bold text-muted-foreground hover:text-foreground"
+            >
+              <ChevronLeft className="mr-1 h-4 w-4" /> Volver al evento
+            </Link>
+            <Button size="sm" variant="secondary" isLoading={refreshing} onClick={() => void loadVideos(true)}>
+              <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Actualizar
+            </Button>
+          </div>
+
+          {loading ? (
+            <div className="grid min-h-80 place-items-center">
+              <LoaderCircle className="h-10 w-10 animate-spin text-muted-foreground" />
+            </div>
+          ) : videos?.length ? (
+            <div className="mt-5 space-y-3">
+              {videos.map((video) => (
+                <VideoRow key={video.id} video={video} onOpen={setSelectedVideo} />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-5 grid min-h-72 place-items-center rounded-4xl border border-dashed border-border bg-card/60 p-8 text-center">
+              <div>
+                <Clapperboard className="mx-auto h-10 w-10 text-muted-foreground" />
+                <h2 className="mt-4 text-xl font-extrabold text-foreground">Aún no hay videos</h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Los videos que envíen tus invitados aparecerán aquí.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {!loading && videos?.some((video) => video.processingStatus === "failed") && (
+            <p className="mt-5 flex items-center gap-2 rounded-2xl bg-destructive/10 p-4 text-sm text-destructive">
+              <CircleAlert className="h-4 w-4 shrink-0" /> Algunos archivos no pudieron optimizarse; su versión original
+              sigue disponible.
+            </p>
+          )}
+        </section>
+      </PageTransition>
+      <VideoPlayerDialog video={selectedVideo} onClose={() => setSelectedVideo(null)} />
+    </PageShell>
+  );
+};
+
+export default AdminVideoLibraryPage;

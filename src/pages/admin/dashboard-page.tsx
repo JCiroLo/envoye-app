@@ -33,7 +33,7 @@ const AdminDashboardPage = () => {
   }, [navigate, token]);
 
   return (
-    <PageShell className="w-full z-10">
+    <PageShell className="w-full z-10" admin>
       <PageTransition>
         <section>
           <div className="flex items-center justify-between gap-4">

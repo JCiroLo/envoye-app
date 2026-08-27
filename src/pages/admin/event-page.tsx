@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ChevronLeftIcon, Copy, ExternalLink, ImagePlus, Play, QrCode, Square } from "lucide-react";
+import { ChevronLeftIcon, Clapperboard, Copy, ExternalLink, ImagePlus, Play, QrCode, Square } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { sileo } from "sileo";
 import { motion } from "framer-motion";
@@ -185,7 +185,7 @@ const AdminEventPage = () => {
   };
 
   return (
-    <PageShell className="w-full z-10">
+    <PageShell className="w-full z-10" admin>
       <PageTransition>
         {/* <section style={themeStyle(theme)}> */}
         <section>
@@ -249,6 +249,12 @@ const AdminEventPage = () => {
                     <QrCode className="mr-2 h-4 w-4" />
                     Generar QR
                   </Button>
+                  <Link to={`/admin/events/${eventId}/videos`}>
+                    <Button className="w-full">
+                      <Clapperboard className="mr-2 h-4 w-4" />
+                      Ver videos
+                    </Button>
+                  </Link>
                   {event?.status === "closed" && (
                     <Link to={`/admin/events/${eventId}/gallery`}>
                       <Button className="w-full">

@@ -33,7 +33,7 @@ const AdminLoginPage = () => {
     }
   };
   return (
-    <PageShell className="w-full flex items-center justify-center">
+    <PageShell className="w-full flex items-center justify-center" admin>
       <PageTransition>
         <form onSubmit={submit} className="surface-card w-full rounded-4xl p-8">
           <div className="brand-mark text-4xl text-primary">Envoye</div>

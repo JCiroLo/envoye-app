@@ -2,19 +2,23 @@ import { type ReactNode, useEffect, useState } from "react";
 import { DEFAULT_BACKGROUND_IMAGE_URL } from "@/lib/constants";
 import cn from "@/utils/cn-helper";
 
+type PageShellProps = {
+  children: ReactNode;
+  className?: string;
+  background?: string | null;
+  backgroundPlaceholder?: string | null;
+  admin?: boolean;
+};
+
 const loadedBackgrounds = new Set<string>();
 
 const PageShell = ({
   children,
   className,
-  background = DEFAULT_BACKGROUND_IMAGE_URL,
   backgroundPlaceholder,
-}: {
-  children: ReactNode;
-  className?: string;
-  background?: string | null;
-  backgroundPlaceholder?: string | null;
-}) => {
+  background = DEFAULT_BACKGROUND_IMAGE_URL,
+  admin = false,
+}: PageShellProps) => {
   const backgroundSource = background ?? DEFAULT_BACKGROUND_IMAGE_URL;
   const [backgroundLoaded, setBackgroundLoaded] = useState(() => loadedBackgrounds.has(backgroundSource));
 
@@ -49,8 +53,14 @@ const PageShell = ({
           }}
         />
       )}
-      {background && <div className="fixed inset-0 bg-linear-to-t from-black/75 to-transparent pointer-events-none" />}
-      <div className={cn(className, "sm:px-8 h-dvh scroll-auto px-4 py-16 w-full")}>{children}</div>
+      {background && (
+        <div
+          className={cn("fixed inset-0 bg-linear-to-t from-black/75 to-transparent pointer-events-none", {
+            "bg-black/75": admin,
+          })}
+        />
+      )}
+      <div className={cn(className, "sm:px-8 h-dvh scroll-auto px-4 pb-16 pt-8 w-full overflow-y-auto")}>{children}</div>
     </main>
   );
 };

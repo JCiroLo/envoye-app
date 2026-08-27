@@ -7,7 +7,7 @@ import PageShell from "@/components/page-shell";
 import PageTransition from "@/components/page-transition";
 import useEventStore from "@/stores/use-event-store";
 import useGuestSubmissionStore from "@/stores/use-guest-submission-store";
-import { preloadPublicCover, publicCoverUrls } from "@/lib/public-cover";
+import { preloadPublicCover } from "@/lib/public-cover";
 
 const PublicEventLayout = () => {
   const { accessCode = "" } = useParams();
@@ -38,23 +38,20 @@ const PublicEventLayout = () => {
     const welcomeMessage = event.welcome_message_text?.trim();
     const description = welcomeMessage
       ? `${welcomeMessage}${eventDate ? ` · ${eventDate}` : ""}`
-      : (eventDate ? `Te invitan a un evento el ${eventDate}.` : "Tienes una invitación de Envoye.");
+      : eventDate
+        ? `Te invitan a un evento el ${eventDate}.`
+        : "Tienes una invitación de Envoye.";
 
     document.title = title;
-    const descriptionTag = document.querySelector('meta[name="description"]') ?? document.head.appendChild(document.createElement("meta"));
+    const descriptionTag =
+      document.querySelector('meta[name="description"]') ?? document.head.appendChild(document.createElement("meta"));
     descriptionTag.setAttribute("name", "description");
     descriptionTag.setAttribute("content", description);
   }, [event]);
 
-  const optimisticCover = publicCoverUrls(normalizedCode);
-
   if (loading || eventAccessCode !== normalizedCode) {
     return (
-      <PageShell
-        className="w-full flex items-center justify-center"
-        background={optimisticCover.cover}
-        backgroundPlaceholder={optimisticCover.placeholder}
-      >
+      <PageShell className="w-full flex items-center justify-center">
         <PageTransition className="flex items-center justify-center z-10">
           <LoaderCircle className="mr-2 h-8 w-8 animate-spin" />
           <p className="text-2xl">Abriendo invitación</p>

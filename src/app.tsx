@@ -5,6 +5,7 @@ import AdminDashboardPage from "@/pages/admin/dashboard-page";
 import AdminEventPage from "@/pages/admin/event-page";
 import AdminGalleryPage from "@/pages/admin/gallery-page";
 import AdminLoginPage from "@/pages/admin/login-page";
+import AdminVideoLibraryPage from "@/pages/admin/video-library-page";
 import ConfirmationPage from "@/pages/guest/confirmation-page";
 import InvitePage from "@/pages/guest/invite-page";
 import RecordingPage from "@/pages/guest/recording-page";
@@ -29,6 +30,7 @@ const RoutedApp = () => {
           <Route path="/admin/events/new" element={<AdminEventPage />} />
           <Route path="/admin/events/:eventId" element={<AdminEventPage />} />
           <Route path="/admin/events/:eventId/gallery" element={<AdminGalleryPage />} />
+          <Route path="/admin/events/:eventId/videos" element={<AdminVideoLibraryPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
