@@ -30,7 +30,7 @@ const RoutedApp = () => {
           <Route path="/admin/events/new" element={<AdminEventPage />} />
           <Route path="/admin/events/:eventId" element={<AdminEventPage />} />
           <Route path="/admin/events/:eventId/gallery" element={<AdminGalleryPage />} />
-          <Route path="/admin/events/:eventId/videos" element={<AdminVideoLibraryPage />} />
+          <Route path="/admin/events/:eventId/media" element={<AdminVideoLibraryPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

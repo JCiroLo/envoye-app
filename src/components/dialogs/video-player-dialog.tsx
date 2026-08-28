@@ -1,17 +1,17 @@
 import * as React from "react";
-import { Sparkles, Trash2, Video } from "lucide-react";
+import { Mic, Sparkles, Trash2, Video } from "lucide-react";
 import Button from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import type { VideoSource, VideoSubmission } from "@/types";
+import type { MediaSubmission, VideoSource } from "@/types";
 
 const VideoPlayerDialog = ({
   video,
   onClose,
   onDelete,
 }: {
-  video: VideoSubmission | null;
+  video: MediaSubmission | null;
   onClose: () => void;
-  onDelete: (video: VideoSubmission) => void;
+  onDelete: (video: MediaSubmission) => void;
 }) => {
   const [source, setSource] = React.useState<VideoSource>("original");
   const optimizedAvailable = Boolean(video?.optimizedUrl);
@@ -58,9 +58,9 @@ const VideoPlayerDialog = ({
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
             </div>
-            <div className="aspect-video bg-black">
+            <div className="flex aspect-video items-center justify-center bg-black">
               {url ? (
-                <video key={url} src={url} autoPlay controls playsInline preload="metadata" className="h-full w-full" />
+                video.mediaType === "image" ? <img key={url} src={url} alt="Contenido enviado" className="h-full w-full object-contain" /> : video.mediaType === "audio" ? <div className="w-full max-w-sm px-8 text-center text-white"><Mic className="mx-auto mb-4 h-10 w-10 text-primary" /><audio key={url} src={url} autoPlay controls className="w-full" /></div> : <video key={url} src={url} autoPlay controls playsInline preload="metadata" className="h-full w-full" />
               ) : (
                 <div className="grid h-full place-items-center px-8 text-center text-sm text-white/70">
                   Este archivo ya no está disponible.

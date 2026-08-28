@@ -1,8 +1,9 @@
 import * as React from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useShallow } from "zustand/shallow";
 import Gallery3D from "@/components/gallery-3d";
 import { api, getAdminToken } from "@/lib/api";
-import type { Letter } from "@/stores/use-letter-store";
+import useLetterStore from "@/stores/use-letter-store";
 import type { EventTheme } from "@/lib/event-theme";
 
 type Submission = {
@@ -15,10 +16,15 @@ type Submission = {
 };
 
 const AdminGalleryPage = () => {
+  const { letters, setLetters } = useLetterStore(
+    useShallow((state) => ({
+      letters: state.letters,
+      setLetters: state.setLetters,
+    })),
+  );
   const { eventId = "" } = useParams();
   const navigate = useNavigate();
-  const [letters, setLetters] = React.useState<Letter[] | null>(null);
-  const [theme, setTheme] = React.useState<EventTheme>();
+  const [_, setTheme] = React.useState<EventTheme>();
   React.useEffect(() => {
     const token = getAdminToken();
     if (!token) {
@@ -43,15 +49,10 @@ const AdminGalleryPage = () => {
       );
     });
   }, [eventId, navigate]);
+
   if (!letters)
     return <div className="grid min-h-screen place-items-center bg-slate-950 text-white">Cargando mural…</div>;
-  return (
-    <Gallery3D
-      eventId={eventId}
-      lettersOverride={letters}
-      theme={theme}
-      onBack={() => navigate(`/admin/events/${eventId}`)}
-    />
-  );
+
+  return <Gallery3D eventId={eventId} onBack={() => navigate(`/admin/events/${eventId}`)} />;
 };
 export default AdminGalleryPage;

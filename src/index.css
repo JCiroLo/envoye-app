@@ -107,9 +107,83 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(168, 85, 247, 0.15);
+  background: var(--muted);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(168, 85, 247, 0.3);
+  background: var(--muted-foreground);
+}
+
+@layer utilities {
+  /* Construcción de los corazones */
+  .heart::before,
+  .heart::after {
+    position: absolute;
+    content: "";
+    left: 50px;
+    top: 0;
+    width: 50px;
+    height: 80px;
+    background: #d00000;
+    border-radius: 50px 50px 0 0;
+    transform: rotate(-45deg);
+    transform-origin: 0 100%;
+    pointer-events: none;
+  }
+  .heart::after {
+    left: 0;
+    transform: rotate(45deg);
+    transform-origin: 100% 100%;
+  }
+
+  /* Animaciones de los corazones */
+  @keyframes slideUp {
+    0% {
+      top: 0;
+    }
+    100% {
+      top: -600px;
+    }
+  }
+  @keyframes sideSway {
+    0% {
+      margin-left: 0px;
+    }
+    100% {
+      margin-left: 50px;
+    }
+  }
+
+  /* NUEVO: Coreografía de extracción de la carta (Duración total recomendada: 3s) */
+  @keyframes extractLetter {
+    0% {
+      transform: translateY(0);
+      z-index: 1;
+    }
+    16% {
+      /* Sube a asomarse (toma ~0.5s) */
+      transform: translateY(-80px);
+      z-index: 1;
+    }
+    50% {
+      /* Espera asomada por 1 segundo (hasta el seg 1.5) */
+      transform: translateY(-80px);
+      z-index: 1;
+    }
+    66% {
+      /* Sale completamente del sobre por la parte trasera (seg 2.0) */
+      transform: translateY(-280px);
+      z-index: 1;
+    }
+    67% {
+      /* Intercambio instantáneo de Z-Index cuando está arriba, invisible al ojo */
+      transform: translateY(-280px);
+      z-index: 10;
+    }
+    100% {
+      /* Baja hacia el frente para descansar (seg 3.0) */
+      transform: translateY(0);
+      z-index: 10;
+    }
+  }
 }

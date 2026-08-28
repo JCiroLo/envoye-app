@@ -205,7 +205,7 @@ const AdminEventPage = () => {
           <div className="flex flex-col gap-1">
             {/* <aside style={themeStyle(theme)} className="w-full rounded-4xl p-5"> */}
             {eventId && (
-              <aside className="w-full rounded-4xl p-5">
+              <aside className="w-full flex flex-col gap-2 rounded-4xl p-5">
                 {/* <p className="text-xs font-extrabold uppercase tracking-[.18em] text-white/55">Vista previa</p>
               <div className="mt-5">
                 <div className="relative overflow-hidden rounded-3xl bg-card p-6 text-center">
@@ -222,48 +222,44 @@ const AdminEventPage = () => {
                 </div>
               </div> */}
 
-                <div className="mt-0 space-y-2">
-                  <Button
-                    variant={event?.status === "active" ? "destructive" : "secondary"}
-                    className="w-full"
-                    isLoading={acting}
-                    onClick={toggleStatus}
-                  >
-                    {event?.status === "active" ? (
-                      <>
-                        <Square className="mr-2 h-4 w-4" />
-                        Cerrar evento
-                      </>
-                    ) : (
-                      <>
-                        <Play className="mr-2 h-4 w-4" />
-                        Activar evento
-                      </>
-                    )}
-                  </Button>
-                  <Button className="w-full" onClick={copy}>
-                    <Copy className="mr-2 h-4 w-4" />
-                    Copiar código
-                  </Button>
-                  <Button className="w-full" isLoading={qrLoading} onClick={generateQr}>
-                    <QrCode className="mr-2 h-4 w-4" />
-                    Generar QR
-                  </Button>
-                  <Link to={`/admin/events/${eventId}/videos`}>
-                    <Button className="w-full">
-                      <Clapperboard className="mr-2 h-4 w-4" />
-                      Ver videos
-                    </Button>
-                  </Link>
-                  {event?.status === "closed" && (
-                    <Link to={`/admin/events/${eventId}/gallery`}>
-                      <Button className="w-full">
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        Ver mural
-                      </Button>
-                    </Link>
+                <Button
+                  variant={event?.status === "active" ? "destructive" : "secondary"}
+                  className="w-full"
+                  isLoading={acting}
+                  onClick={toggleStatus}
+                >
+                  {event?.status === "active" ? (
+                    <>
+                      <Square className="mr-2 h-4 w-4" />
+                      Cerrar evento
+                    </>
+                  ) : (
+                    <>
+                      <Play className="mr-2 h-4 w-4" />
+                      Activar evento
+                    </>
                   )}
-                </div>
+                </Button>
+                <Button className="w-full" onClick={copy}>
+                  <Copy className="mr-2 h-4 w-4" />
+                  Copiar código
+                </Button>
+                <Button className="w-full" isLoading={qrLoading} onClick={generateQr}>
+                  <QrCode className="mr-2 h-4 w-4" />
+                  Generar QR
+                </Button>
+                <Link to={`/admin/events/${eventId}/media`}>
+                  <Button className="w-full">
+                    <Clapperboard className="mr-2 h-4 w-4" />
+                    Ver multimedia
+                  </Button>
+                </Link>
+                <Link to={`/admin/events/${eventId}/gallery`}>
+                  <Button className="w-full">
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    {event?.status === "closed" ? "Ver mural" : "Previsualizar mural"}
+                  </Button>
+                </Link>
               </aside>
             )}
             <section className="surface-card grow rounded-4xl p-6 sm:p-9">

@@ -10,3 +10,9 @@ export type VideoSubmission = {
 };
 
 export type VideoSource = "original" | "optimized";
+
+export type MediaType = "video" | "audio" | "image";
+
+export type MediaSubmission = Omit<VideoSubmission, "mediaType"> & {
+  mediaType: MediaType;
+};
